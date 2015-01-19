@@ -149,6 +149,88 @@ def output_all_uids():
         index+=1
     cPickle.dump(uids,open('uids.data','wb'))
 
+def get_htmls_by_domid(html, domid):
+    pat=ur'{.*"domid":"%s.*}'%domid
+    try:
+        results=re.findall(pat, html.decode('utf8'))
+    except:
+        results=re.findall(pat, html)
+    if(results==[]):
+        print 'No html'
+        return None
+    try:
+        htmls=[]
+        for result in results:
+            if 'html' in result:
+                html=normal(result[result.index('html')+7:-2])
+                #htmls.append(normal(result['html']).decode('utf8'))#[22:-1].replace('\\','')
+                htmls.append(html)
+        return htmls
+    except Exception as e:
+        print e
+        print 'No dict'
+        return None
+
+def get_school(html):
+    if(not '&school' in html):
+        return None
+    pat='<a[^<>]*&school[^<>]*>[^<>]*<'
+    a=re.findall(pat,html)
+    ans=[]
+    for school in a:
+        pat='>.*<'
+        school=re.findall(pat,school)
+        if(school==[]):
+            continue
+        else:
+            ans.append(school[0][1:-1])
+    if(ans==[]):
+        return None
+    else:
+        return ans
+
+def get_target(html):
+    if(not 'location.replace' in html):
+        print('No location.replace in html')
+        return None
+    pat="location.replace\('[^']*'\)"
+    a=re.findall(pat,html)
+    pat='location.replace\("[^"]*"\)'
+    b=re.findall(pat,html)
+    ans=[]
+    for url in a:
+        ans.append(url[18:-2])
+    for url in b:
+        ans.append(url[18:-2])
+    if(ans==[]):
+        return None
+    else:
+        return ans
+
+def remove_trn(s):
+    strings=['\t','\r','\n']
+    for ss in strings:
+        s=s.replace(ss,'')
+    return s
+
+def normal(html):
+    to_replace=dict()
+    to_replace['\\t']='\t'
+    to_replace['\\n']='\n'
+    to_replace['\\r']='\r'
+    to_replace['\\"']='"'
+    to_replace['\\/']='/'
+    for key in to_replace.keys():
+        html=html.replace(key, to_replace[key])
+    return html
+
+def sleep(sleep_time):
+    sleep_time=sleep_time+random.randint(-5,5)
+    print('Sleeping for '+str(sleep_time)+' seconds')
+    time.sleep(sleep_time)
+    print('Wake up')
+
+
 if __name__=='__main__':
     #print get_average_statuses_count()
     #check()
