@@ -9,6 +9,7 @@ import sys
 import random
 import time
 import copy
+import settings
 
 global cookieJar
 global sleep_time
@@ -110,8 +111,8 @@ if __name__ == '__main__':
     channel = connection.channel()
     sleep_time=2
     #定义队列
-    channel.queue_declare(queue='user_statuses')
+    channel.queue_declare(queue=settings.QUEUE_NAME)
     channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(request, queue='user_statuses')
+    channel.basic_consume(request, queue=settings.QUEUE_NAME)
 
     channel.start_consuming()

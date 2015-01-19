@@ -2,6 +2,7 @@
 #coding=utf8
 import pika
 from crawler import get_html
+import settings
 
 class Deliver(object):
     def __init__(self):
@@ -23,11 +24,12 @@ class Deliver(object):
 
     def request_directly(self,body):
         return get_html(body)
+
     def request(self, body):
         self.response = None
         #发送计算请求，并声明返回队列
         self.channel.basic_publish(exchange='',
-                                   routing_key='user_statuses',
+                                   routing_key=settings.QUEUE_NAME,
                                    properties=pika.BasicProperties(
                                          reply_to = self.callback_queue,
                                          ),

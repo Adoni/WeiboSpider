@@ -23,6 +23,7 @@ class WeiboSpider():
     file_in_name='./age_uids.data'
 
 
+    #The headers to imitate the brower
     all_headers={
             'simple_headers':{
                 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -30,9 +31,12 @@ class WeiboSpider():
                 'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36'
                 }
             }
+
     def __init__(self):
         print('This is Weibo Spider')
+        #Define the deliver
         self.deliver=Deliver()
+        #Connect with mongodb
         self.con=Connection()
         self.db = self.con.user_image
         #self.users_collection=self.db.user_age
