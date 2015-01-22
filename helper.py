@@ -49,6 +49,14 @@ def get_statuses(html):
         text=text.replace('\\','').replace('/','').replace(' ','').replace('\n','')
         return text
 
+    def get_emoticons(status):
+        emoticons_list=status.xpath('./div[1]/div[2]/div[1]//img')
+        emoticons=[]
+        for emoticon in emoticons_list:
+            emoticon=emoticon.get('alt')
+            emoticons.append(emoticon)
+        return emoticons
+
     try:
         doc = lxml.html.fromstring(html)
     except:
@@ -61,11 +69,13 @@ def get_statuses(html):
         text=get_text(status)
         if text=='':
             continue
+        emoticons=get_emoticons(status)
         time=get_time(status)
         source=get_source(status)
         collect,repost,response,like=get_echo(status)
         s['mid']=mid
         s['text']=text
+        s['emoticons']=emoticons
         s['time']=time
         s['source']=source
         s['collect']=collect

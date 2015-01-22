@@ -35,5 +35,6 @@ if __name__=='__main__':
             print status['text']
             print status['time']
             print status['source']
+            print status['emoticons']
     except Exception as e:
         print e
