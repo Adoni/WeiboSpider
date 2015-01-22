@@ -29,9 +29,11 @@ def get_request(body):
     else:
         url=body['url']
     headers=body['headers']
+    print headers
     request=urllib2.Request(
             url=url,
-            headers=headers)
+            headers=headers
+            )
     return request
 
 def get_html(body):
@@ -39,13 +41,13 @@ def get_html(body):
     request=get_request(body)
     try:
         request=get_request(body)
-        html=urllib2.urlopen(request, timeout=10).read()
+        html=urllib2.urlopen(request, timeout=20).read()
     except:
         print('Sleeping...')
         print(body)
         #sleep(sleep_time)
         try:
-            html=urllib2.urlopen(request, timeout=10).read()
+            html=urllib2.urlopen(request, timeout=20).read()
         except:
             print 'get url error'
             return ''
@@ -61,21 +63,21 @@ def get_html(body):
             print('Got target')
             print('Retry to get html')
             body['url']=target[0]
-            request=self.get_request(body)
+            request=get_request(body)
             try:
                 html=urllib2.urlopen(request).read()
                 print('Got html')
                 print('Saveing cookie')
-                cookieJar.save()
+                #cookieJar.save()
                 print('Save cookie')
             except:
                 sleep(sleep_time)
                 try:
-                    request=self.get_request(body)
+                    request=get_request(body)
                     html=urllib2.urlopen(request).read()
                     print('Got html')
                     print('Saveing cookie')
-                    cookieJar.save()
+                    #cookieJar.save()
                     print('Save cookie')
                 except:
                     print('Error!!!!!')
@@ -103,13 +105,13 @@ def request(ch, method, properties, body):
 
 if __name__ == '__main__':
     #载入cookie
-    #cookie_file_name='./cookies/cookie_'+str(sys.argv[1])
-    #install_cookie(cookie_file_name)
+    cookie_file_name='./cookies/cookie_'+str(sys.argv[1])
+    install_cookie(cookie_file_name)
     #连接rabbitmq服务器
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='localhost'))
     channel = connection.channel()
-    sleep_time=2
+    sleep_time=50
     #定义队列
     channel.queue_declare(queue=settings.QUEUE_NAME)
     channel.basic_qos(prefetch_count=1)

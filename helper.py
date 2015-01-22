@@ -3,6 +3,75 @@ import re
 import random
 import time
 import cPickle
+import lxml.html
+import json
+
+def get_statuses(html):
+
+    def get_time(status):
+        time=status.xpath('./div[1]/div[2]//div[@class="WB_from S_txt2"]/a[1]/text()')
+        try:
+            time=time[0]
+        except:
+            return None
+        while time[0]==' ':
+            time=time[1:]
+        return time
+
+    def get_source(status):
+        source=status.xpath('./div[1]/div[2]//div[@class="WB_from S_txt2"]/a[2]/text()')
+        try:
+            source=source[0]
+        except:
+            return None
+        while source[0]==' ':
+            source=source[1:]
+        return source
+
+    def get_echo(status):
+        echo=status.xpath('./div[2]/div[1]/ul[1]//li/a[1]/span[1]/span[1]/text()')
+        collect=echo[0]
+        repost=echo[1]
+        response=echo[2]
+        like=status.xpath('./div[2]/div[1]/ul[1]//li/a[1]/span[1]/span[1]/span[1]/em[1]/text()')
+        if like==[]:
+            like=u'赞 0'
+        else:
+            like=u'赞 '+like[0]
+        return collect,repost,response,like
+
+    def get_text(status):
+        text=status.xpath('./div[1]/div[2]/div[1]')
+        try:
+            text=text[0].text_content()
+        except:
+            return None
+        text=text.replace('\\','').replace('/','').replace(' ','').replace('\n','')
+        return text
+
+    try:
+        doc = lxml.html.fromstring(html)
+    except:
+        return []
+    statuses_list = doc.xpath('//div[@class="WB_cardwrap WB_feed_type S_bg2 "]')
+    statuses=[]
+    for status in statuses_list:
+        s=dict()
+        text=get_text(status)
+        if text=='':
+            continue
+        time=get_time(status)
+        source=get_source(status)
+        collect,repost,response,like=get_echo(status)
+        s['text']=text
+        s['time']=time
+        s['source']=source
+        s['collect']=source
+        s['repost']=repost
+        s['response']=response
+        s['like']=like
+        statuses.append(s)
+    return statuses
 
 def get_href_from_text(text, html):
     pat='<a[^<,>]*>'+text+'<'
@@ -67,6 +136,9 @@ def is_not_name(name):
 
 def sleep(sleep_time):
     sleep_time=sleep_time+random.randint(-2,2)
+    print sleep_time
+    if sleep_time<=0:
+        sleep_time=0
     print('Sleeping for '+str(sleep_time)+' seconds')
     time.sleep(sleep_time)
     print('Wake up')
@@ -224,14 +296,48 @@ def normal(html):
         html=html.replace(key, to_replace[key])
     return html
 
-def sleep(sleep_time):
-    sleep_time=sleep_time+random.randint(-5,5)
-    print('Sleeping for '+str(sleep_time)+' seconds')
-    time.sleep(sleep_time)
-    print('Wake up')
+def load_headers():
+    f=open('./headers.data')
+    headers_list={}
+    header_name=''
+    headers={}
+    for l in f:
+        l=l.replace('\n','')
+        if l.startswith('BEGIN'):
+            header_name=l.split(' ')[1]
+            continue
+        if l.startswith('END'):
+            headers_list[header_name]=headers
+            headers={}
+            continue
+        l=l.split(':')
+        headers[l[0]]=l[1]
+    return headers_list
 
+def get_htmls_by_domid(html, domid):
+    pat=ur'{.*"domid":"%s.*}'%domid
+    try:
+        results=re.findall(pat, html.decode('utf8'))
+    except:
+        results=re.findall(pat, html)
+    if(results==[]):
+        print 'No html'
+        return None
+    try:
+        htmls=[]
+        for result in results:
+            if 'html' in result:
+                html=normal(result[result.index('html')+7:-2])
+                #htmls.append(normal(result['html']).decode('utf8'))#[22:-1].replace('\\','')
+                htmls.append(html)
+        return htmls
+    except Exception as e:
+        print e
+        print 'No dict'
+        return None
 
 if __name__=='__main__':
     #print get_average_statuses_count()
     #check()
-    output_all_uids()
+    #output_all_uids()
+    print load_headers()

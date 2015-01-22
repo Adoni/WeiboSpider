@@ -9,7 +9,10 @@ from lxml import etree
 
 from deliver import Deliver
 from helper import is_not_name
-from helper import get_new_line_num
+from helper import get_statuses
+from helper import load_headers
+from helper import normal
+from helper import get_htmls_by_domid
 from pymongo import Connection
 
 
@@ -19,18 +22,12 @@ class WeiboSpider():
     access_token = '2.00_BHNxDlxpd6C2fab6e6e09i5M5DE'
     ltp_token='j323H4kIWzQkRwGxiGNUtGhO7f6tGBQNvqWqSW3K'
     #sleep time before try again
-    sleep_time=5
+    sleep_time=50
     file_in_name='./age_uids.data'
 
 
     #The headers to imitate the brower
-    all_headers={
-            'simple_headers':{
-                'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6',
-                'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36'
-                }
-            }
+    all_headers=load_headers()
 
     def __init__(self):
         print('This is Weibo Spider')
@@ -44,7 +41,7 @@ class WeiboSpider():
         self.corpse_users=self.db.corpse_users
 
     def get_html(self, url):
-        body={'url':url, 'headers':self.all_headers['simple_headers'],'need_sleep':False}
+        body={'url':url, 'headers':self.all_headers['UserStatus'],'need_sleep':True}
         return self.deliver.request(body)
 
     def parse_text(self, text):
@@ -85,52 +82,31 @@ class WeiboSpider():
         statuses=[]
         page=1
         while 1:
-            complete_url = base_url+'uids='+str(uid)+'&access_token='+self.access_token+'&count=100&feature=1&page='+str(page)
+            print len(statuses)
+            #获取基础的网页
+            url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(uid,page)
+            html=self.get_html(url)
+            html=get_htmls_by_domid(html,'Pl_Official_MyProfileFeed__')
+            if not html:
+                break
+            html=normal(html[0])
+            tmp_statuses=get_statuses(html)
+            if tmp_statuses==[]:
+                break
+            statuses+=tmp_statuses
+            for pagebar in range(0,2):
+                url='http://www.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=100505&profile_ftype=1&is_ori=1&pre_page=%d&page=%d&pagebar=%d&id=100505%s'%(page, page, pagebar, uid)
+                html=self.get_html(url)
+                try:
+                    html=normal(json.loads(html)['data'])
+                except Exception as e:
+                    print e
+                    continue
+                tmp_statuses=get_statuses(html)
+                if tmp_statuses==[]:
+                    continue
+                statuses+=tmp_statuses
             page+=1
-            response=self.get_html(complete_url)
-            #将网页内容载入为json数据
-            try:
-                json_data = json.loads(response)
-            except:
-                return None
-
-            #判断json的有效性
-            if(not 'statuses' in json_data):
-                return None
-            if(not json_data['statuses']):
-                return None
-
-            #获取每一条微博的信息
-            for status in json_data['statuses']:
-                local_status=dict()
-                #created_at:微博创建时间
-                local_status['created_at']=status['created_at']
-                #text:微博信息内容
-                text=status['text'].replace('\n',' ')
-                #提取表情符提取和分词
-                pure_text, emoticons=self.get_emoticons(text)
-                if('#' in pure_text):
-                    continue
-                #分词
-                pure_text = self.parse_text(pure_text)
-                if(pure_text==None):
-                    continue
-                local_status['text']=pure_text
-                local_status['emoticons']=emoticons
-                #source:微博来源
-                local_status['source']=status['source']
-                #geo:地理信息字段;其中取province_name和city_name
-                if(status['geo'] and 'province_name' in status['geo'] and 'city_name' in status['geo']):
-                    local_status['province']=status['geo']['province_name']
-                    local_status['city']=status['geo']['city_name']
-                else:
-                    local_status['province']='Null'
-                    local_status['city']='Null'
-                #reposts_count:转发数
-                local_status['response_count']=str(status['reposts_count'])
-                #comments_count:评论数
-                local_status['comments_count']=str(status['comments_count'])
-                statuses.append(local_status)
         return statuses
 
     def get_uids(self, count=-1):
@@ -206,4 +182,9 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    spider.start_requests()
+    #spider.start_requests()
+    statuses=spider.get_user_statuses('1831202675')
+    print len(statuses)
+    for s in statuses:
+        print '+'*10
+        print s['text']
