@@ -6,6 +6,7 @@ import urllib
 import urllib2
 import re
 from lxml import etree
+import cPickle
 
 from deliver import Deliver
 from helper import is_not_name
@@ -23,8 +24,6 @@ class WeiboSpider():
     ltp_token='j323H4kIWzQkRwGxiGNUtGhO7f6tGBQNvqWqSW3K'
     #sleep time before try again
     sleep_time=50
-    file_in_name='./age_uids.data'
-
 
     #The headers to imitate the brower
     all_headers=load_headers()
@@ -111,7 +110,8 @@ class WeiboSpider():
 
     def get_uids(self, count=-1):
         all_existed_users=self.users_collection.find({},{'information':1})
-        all_uids=[uid.replace('\n','') for uid in open(self.file_in_name).readlines()]
+        #all_uids=[uid.replace('\n','') for uid in open(self.file_in_name).readlines()]
+        all_uids=cPickle.load(open('./uids.bin','rb'))
         print all_existed_users.count()
         for existed_user in all_existed_users:
             if existed_user['information']['uid'] in all_uids:
