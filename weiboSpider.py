@@ -81,7 +81,9 @@ class WeiboSpider():
         statuses=[]
         page=1
         while 1:
-            print len(statuses)
+            if len(statuses)>1000:
+                break
+            print 'Try to get %d pages, and now we got %d statuses'%(page,len(statuses))
             #获取基础的网页
             url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(uid,page)
             html=self.get_html(url)
@@ -110,6 +112,7 @@ class WeiboSpider():
 
     def get_uids(self, count=-1):
         all_existed_users=self.users_collection.find({},{'information':1})
+        all_existed_users+=self.corpse_users.find({},{'information':1})
         #all_uids=[uid.replace('\n','') for uid in open(self.file_in_name).readlines()]
         all_uids=cPickle.load(open('./uids.bin','rb'))
         print all_existed_users.count()
@@ -169,14 +172,12 @@ class WeiboSpider():
             user_data=self.get_user_data(uid)
             if user_data==None:
                 continue
-            if is_not_name(user_data['user_information']):
+            if is_not_name(user_data['information']['screen_name']):
                 print 'illgal'
-                print user_data
-                #self.corpse_users.insert(user_data)
+                self.corpse_users.insert(user_data)
             else:
                 print 'leagal'
-                print user_data
-                #self.users_collection.insert(user_data)
+                self.users_collection.insert(user_data)
             print 'Done'
 
 
