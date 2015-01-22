@@ -57,12 +57,14 @@ def get_statuses(html):
     statuses=[]
     for status in statuses_list:
         s=dict()
+        mid=status.get('mid')
         text=get_text(status)
         if text=='':
             continue
         time=get_time(status)
         source=get_source(status)
         collect,repost,response,like=get_echo(status)
+        s['mid']=mid
         s['text']=text
         s['time']=time
         s['source']=source

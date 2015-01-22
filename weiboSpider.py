@@ -111,15 +111,16 @@ class WeiboSpider():
         return statuses
 
     def get_uids(self, count=-1):
-        all_existed_users=self.users_collection.find({},{'information':1})
-        all_existed_users+=self.corpse_users.find({},{'information':1})
-        #all_uids=[uid.replace('\n','') for uid in open(self.file_in_name).readlines()]
         all_uids=cPickle.load(open('./uids.bin','rb'))
-        print all_existed_users.count()
+        all_existed_users=self.users_collection.find({},{'information':1})
         for existed_user in all_existed_users:
             if existed_user['information']['uid'] in all_uids:
                 all_uids.remove(existed_user['information']['uid'])
-                #print existed_user['information']['uid']
+        all_existed_corpse_users=self.corpse_users.find({},{'information':1})
+        for existed_user in all_existed_corpse_users:
+            if existed_user['information']['uid'] in all_uids:
+                all_uids.remove(existed_user['information']['uid'])
+        print 'There are %d users and %d corpse_users users'%(all_existed_users.count(),all_existed_corpse_users.count())
         print all_existed_users.count()
         if(count==-1):
             return all_uids

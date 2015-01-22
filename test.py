@@ -57,6 +57,8 @@ def get_statuses(html):
     for status in statuses_list:
         print '+++++++++'
         s=dict()
+        mid=status.get('mid')
+        print 'mid'+mid
         text=get_text(status)
         if text=='':
             continue
