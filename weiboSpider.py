@@ -159,7 +159,7 @@ class WeiboSpider():
         user_data=dict()
         user_data['information']=information
         user_data['statuses']=statuses
-        user_data['parsed']=True
+        user_data['parsed']=False
         return user_data
 
     def start_requests(self):
@@ -182,9 +182,4 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    #spider.start_requests()
-    statuses=spider.get_user_statuses('1831202675')
-    print len(statuses)
-    for s in statuses:
-        print '+'*10
-        print s['text']
+    spider.start_requests()
