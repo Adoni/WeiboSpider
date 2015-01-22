@@ -219,7 +219,7 @@ def output_all_uids():
             print index,total_count
         uids.append(user['information']['uid'])
         index+=1
-    cPickle.dump(uids,open('uids.data','wb'))
+    cPickle.dump(uids,open('uids.bin','wb'))
 
 def get_htmls_by_domid(html, domid):
     pat=ur'{.*"domid":"%s.*}'%domid
@@ -297,7 +297,7 @@ def normal(html):
     return html
 
 def load_headers():
-    f=open('./headers.data')
+    f=open('./headers.bin')
     headers_list={}
     header_name=''
     headers={}
