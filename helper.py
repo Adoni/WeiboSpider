@@ -68,7 +68,7 @@ def get_statuses(html):
         s['text']=text
         s['time']=time
         s['source']=source
-        s['collect']=source
+        s['collect']=collect
         s['repost']=repost
         s['response']=response
         s['like']=like
