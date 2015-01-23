@@ -29,10 +29,9 @@ def get_request(body):
     else:
         url=body['url']
     headers=body['headers']
-    print headers
     request=urllib2.Request(
             url=url,
-            headers=headers
+#            headers=headers
             )
     return request
 

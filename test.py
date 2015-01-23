@@ -10,7 +10,7 @@ import json
 import lxml.html
 
 if __name__=='__main__':
-    install_cookie('./cookies/cookie_25')
+    install_cookie('./cookies/cookie_1')
     headers=load_headers()['UserStatus']
     url='http://www.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=100505&profile_ftype=1&is_ori=1&pre_page=1&page=1&pagebar=0&id=1005051831202675'
     url='http://www.weibo.com/1831202675?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=2#feedtop'

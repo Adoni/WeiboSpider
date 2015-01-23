@@ -140,6 +140,7 @@ class WeiboSpider():
             json_data=json.loads(html)
         except:
             print html
+            return None
         information=dict()
         information['uid']=str(json_data['id'])
         information['screen_name']=json_data['screen_name']
@@ -155,10 +156,10 @@ class WeiboSpider():
 
     def get_user_data(self, uid):
         information=self.get_user_information(uid)
-        statuses=self.get_user_statuses(uid)
-        if information==None or statuses==None:
+        if information==None:
             return None
-        if statuses==[] or information=={}:
+        statuses=self.get_user_statuses(uid)
+        if statuses==[] or statuses==None:
             return None
         user_data=dict()
         user_data['information']=information
