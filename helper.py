@@ -30,6 +30,8 @@ def get_statuses(html):
 
     def get_echo(status):
         echo=status.xpath('./div[2]/div[1]/ul[1]//li/a[1]/span[1]/span[1]/text()')
+        if len(echo)<3:
+            return None,None,None,None
         collect=echo[0]
         repost=echo[1]
         response=echo[2]
@@ -73,6 +75,8 @@ def get_statuses(html):
         time=get_time(status)
         source=get_source(status)
         collect,repost,response,like=get_echo(status)
+        if collect==None:
+            continue
         s['mid']=mid
         s['text']=text
         s['emoticons']=emoticons
