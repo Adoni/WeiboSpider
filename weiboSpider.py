@@ -169,6 +169,7 @@ class WeiboSpider():
 
     def start_requests(self):
         uids=self.get_uids()
+        print len(uids)
         for uid in uids:
             print uids.index(uid)
             user_data=self.get_user_data(uid)
