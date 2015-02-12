@@ -29,7 +29,7 @@ class WeiboSpider():
     all_headers=load_headers()
 
     def __init__(self):
-        print('This is Weibo Spider')
+        print('========This is Weibo Spider========')
         #Define the deliver
         self.deliver=Deliver()
         #Connect with mongodb
@@ -63,7 +63,10 @@ class WeiboSpider():
                 result.append(node.get('cont'))
             return result
         except Exception as e:
+            print '========Error when parse text========'
+            print '========Error:========'
             print e
+            print '========End========'
             return None
 
     #Use this function to take emotions from user posts
@@ -101,7 +104,10 @@ class WeiboSpider():
                 try:
                     html=normal(json.loads(html)['data'])
                 except Exception as e:
+                    print '========Error when try to get html========='
+                    print '========Error:========'
                     print e
+                    print '========End========'
                     continue
                 tmp_statuses=get_statuses(html)
                 if tmp_statuses==[]:
@@ -120,8 +126,7 @@ class WeiboSpider():
         for existed_user in all_existed_corpse_users:
             if existed_user['information']['uid'] in all_uids:
                 all_uids.remove(existed_user['information']['uid'])
-        print 'There are %d users and %d corpse_users users'%(all_existed_users.count(),all_existed_corpse_users.count())
-        print all_existed_users.count()
+        print '========There are %d users and %d corpse_users users========'%(all_existed_users.count(),all_existed_corpse_users.count())
         if(count==-1):
             return all_uids
         else:
@@ -132,26 +137,37 @@ class WeiboSpider():
         complete_url=base_url+'access_token='+self.access_token+'&uid='+str(uid)
         html=self.get_html(complete_url)
         if(html=='' or 'error' in html):
-            print('error')
+            print('========Html is empty or error in html========')
+            print '=======End========'
+            print '=======Complete url========'
             print(complete_url)
+            print '=======End========'
             return None
         html=html
         try:
             json_data=json.loads(html)
         except:
-            print html
+            print '=======Error when load json========'
+            print '=======End========'
             return None
-        information=dict()
-        information['uid']=str(json_data['id'])
-        information['screen_name']=json_data['screen_name']
-        information['province']=str(json_data['province'])
-        information['city']=str(json_data['city'])
-        information['location']=json_data['location']
-        information['gender']=str(json_data['gender'])
-        information['followers_count']=str(json_data['followers_count'])
-        information['friends_count']=str(json_data['friends_count'])
-        information['bi_followers_count']=str(json_data['bi_followers_count'])
-        information['verified']=str(json_data['verified'])
+        try:
+            information=dict()
+            information['uid']=str(json_data['id'])
+            information['screen_name']=json_data['screen_name']
+            information['province']=str(json_data['province'])
+            information['city']=str(json_data['city'])
+            information['location']=json_data['location']
+            information['gender']=str(json_data['gender'])
+            information['followers_count']=str(json_data['followers_count'])
+            information['friends_count']=str(json_data['friends_count'])
+            information['bi_followers_count']=str(json_data['bi_followers_count'])
+            information['verified']=str(json_data['verified'])
+        except Exception as e:
+            print '========Error when constructing the dict information========'
+            print '========Error:========'
+            print e
+            print '========End========'
+            return None
         return information
 
     def get_user_data(self, uid):
@@ -169,21 +185,29 @@ class WeiboSpider():
 
     def start_requests(self):
         uids=self.get_uids()
+        print '========The count of uids to crawl:========'
         print len(uids)
+        print '========End========'
         for uid in uids:
+            print '========Index:========'
             print uids.index(uid)
+            print '========End========'
             user_data=self.get_user_data(uid)
             if user_data==None:
+                print '========User data is None========'
                 continue
             if is_not_name(user_data['information']['screen_name']):
-                print 'illgal'
+                print '========The name is illgal========'
                 self.corpse_users.insert(user_data)
+                print '========End========'
             else:
+                print '========The name is leagal========'
                 print 'leagal'
+                print '========End========'
                 self.users_collection.insert(user_data)
-            print 'Done'
-
 
 if __name__=='__main__':
     spider=WeiboSpider()
     spider.start_requests()
+    #uid='2412928981'
+    #spider.get_user_information(uid)

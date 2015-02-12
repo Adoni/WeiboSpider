@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #coding=utf8
 import pika
-from crawler import get_html
 import settings
 
 class Deliver(object):
@@ -20,10 +19,6 @@ class Deliver(object):
     #定义接收到返回消息的处理方法
     def on_response(self, ch, method, props, body):
         self.response = body
-
-
-    def request_directly(self,body):
-        return get_html(body)
 
     def request(self, body):
         self.response = None

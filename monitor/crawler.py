@@ -40,13 +40,13 @@ def get_html(body):
     request=get_request(body)
     try:
         request=get_request(body)
-        html=urllib2.urlopen(request, timeout=20).read()
+        html=urllib2.urlopen(request, timeout=10).read()
     except:
         print('Sleeping...')
         print(body)
         #sleep(sleep_time)
         try:
-            html=urllib2.urlopen(request, timeout=20).read()
+            html=urllib2.urlopen(request, timeout=10).read()
         except:
             print 'get url error'
             return ''
@@ -81,7 +81,7 @@ def get_html(body):
                 except:
                     print('Error!!!!!')
                     print 'refresh cookie error'
-                    print(url)
+                    exit(0)
                     return ''
     return html
 

@@ -196,6 +196,16 @@ def check():
     number=dict()
     number['None']=0
     index=0
+    count=0
+    for user in users.find():
+        try:
+            if len(user['statuses'])>300:
+                count+=1
+        except:
+            print user
+            exit(0)
+    print count
+    exit(0)
     for user in users.find():
         index+=1
         if index%1000==0:
@@ -354,6 +364,6 @@ def get_htmls_by_domid(html, domid):
 
 if __name__=='__main__':
     #print get_average_statuses_count()
-    #check()
+    check()
     #output_all_uids()
-    print load_headers()
+    #print load_headers()

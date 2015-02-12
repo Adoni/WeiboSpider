@@ -3,6 +3,7 @@ import subprocess
 urls=(
     '/','index',
     '/add', 'add',
+    '/add_a_batch', 'add_a_batch',
     '/restart', 'restart',
     '/stop', 'stop',
     '/restart_all', 'restart_all',
@@ -14,10 +15,28 @@ render = web.template.render('templates/')
 crawlers=[]
 class index:
     def GET(self):
+        print '================'
+        print len(crawlers)
+        print '================'
         return render.index(crawlers=crawlers)
+
 class add:
     def POST(self):
-        crawlers.append(subprocess.Popen("python crawler.py "+str(len(crawlers)+1),shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE))
+        order='python ./crawler.py '+str(len(crawlers)+1)
+        print order
+        crawlers.append(subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None))
+        raise web.seeother('/')
+
+class add_a_batch:
+    def POST(self):
+        try:
+            count=int(web.input(name=None).count)
+        except:
+            raise web.seeother('/')
+        for i in range(0,count):
+            order='python ./crawler.py '+str(len(crawlers)+1)
+            print order
+            crawlers.append(subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None))
         raise web.seeother('/')
 
 class stop:
@@ -36,7 +55,9 @@ class restart:
             crawlers[int(i.crawler_id)].terminate()
         except:
             pass
-        crawlers[int(i.crawler_id)]=subprocess.Popen("python crawler.py "+str(int(i.crawler_id)+1),shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        order='python crawler.py '+str(int(i.crawler_id)+1)
+        print order
+        crawlers[int(i.crawler_id)]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
         raise web.seeother('/')
 
 class restart_all():
@@ -46,8 +67,11 @@ class restart_all():
                 crawlers[i].terminate()
             except:
                 pass
-            crawlers[i]=subprocess.Popen("python crawler.py "+str(i+1),shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            order='python crawler.py '+str(i+1)
+            print order
+            crawlers[i]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
         raise web.seeother('/')
+
 class stop_all():
     def POST(self):
         for i in range(0,len(crawlers)):

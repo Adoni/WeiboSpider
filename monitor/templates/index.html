@@ -1,0 +1,129 @@
+$def with (crawlers)
+  <head>
+    <meta http-equiv="refresh" content="60"> 
+  </head>
+  <body>
+  <script type="text/javascript" src="/static/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="/static/semantic.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" class="ui" href="/static/semantic.min.css">
+  
+  <div class="container">
+    <div class="ui green large inverted menu">
+      <a class="item" onclick="add()">
+          <i class="add icon"></i>Add
+      </a>
+      <a class="item" onclick="stop_all()">
+          <i class="stop icon"></i>Stop all
+      </a>
+      <a class="item" onclick="restart_all()">
+          <i class="repeat icon"></i>Restart all
+      </a>
+      <a class="item add batch">
+          Add a batch
+      </a>
+    </div>
+
+        <table class="ui table">
+          <thead>
+            <tr>
+              <th>Number</th>
+              <th>Status</th>
+              <th>Method</th>
+            </tr>
+          </thead>
+          <tbody>
+          $for crawler in crawlers:
+            <tr>
+              <td>
+                $crawlers.index(crawler)
+              </td>
+              $if crawler.poll() is not None:
+                <td class="negative">Stopped</td>
+              $else:
+                <td class="positive">Working</td>
+              <td>
+                <div class="ui buttons">
+                  <div class="ui button" onclick="restart(
+                  $crawlers.index(crawler)
+                  )">Restart</div>
+                  <div class="or"></div>
+                  <div class="ui negative button" onclick="stop(
+                  $crawlers.index(crawler)
+                  )">Stop</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>  
+        </table>
+    </div>
+  </div>
+
+<div class="ui small modal">
+  <div class="content">
+    <form class="ui form" method="post" action="add_a_batch">
+      <h4 class="ui dividing header">Personal Information</h4>
+      <div class="field">
+        <input type="text" name="count" placeholder="First Name">
+      </div>
+      <div class="ui submit button">
+        Register
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function stop(index) { 
+    var temp = document.createElement("form"); 
+    temp.action = "stop"; 
+    temp.method = "post"; 
+    temp.style.display = "none"; 
+    var opt = document.createElement("textarea"); 
+    opt.name = "crawler_id"; 
+    opt.value = index; 
+    temp.appendChild(opt); 
+    document.body.appendChild(temp); 
+    temp.submit(); 
+  }
+  function restart(index) { 
+    var temp = document.createElement("form"); 
+    temp.action = "restart"; 
+    temp.method = "post"; 
+    temp.style.display = "none"; 
+    var opt = document.createElement("textarea"); 
+    opt.name = "crawler_id"; 
+    opt.value = index; 
+    temp.appendChild(opt); 
+    document.body.appendChild(temp); 
+    temp.submit(); 
+  }
+  function add() { 
+    var temp = document.createElement("form"); 
+    temp.action = "add"; 
+    temp.method = "post"; 
+    temp.style.display = "none"; 
+    document.body.appendChild(temp); 
+    temp.submit(); 
+  }
+  function stop_all() { 
+    var temp = document.createElement("form"); 
+    temp.action = "stop_all"; 
+    temp.method = "post"; 
+    temp.style.display = "none"; 
+    document.body.appendChild(temp); 
+    temp.submit(); 
+  } 
+  function restart_all() { 
+    var temp = document.createElement("form"); 
+    temp.action = "restart_all"; 
+    temp.method = "post"; 
+    temp.style.display = "none"; 
+    document.body.appendChild(temp); 
+    temp.submit(); 
+  } 
+</script>
+  <script type="text/javascript">
+    $$('.ui.modal').modal('attach events', '.add.batch', 'show');
+  </script>
+  </body>
