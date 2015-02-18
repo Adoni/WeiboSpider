@@ -102,11 +102,21 @@ class WeiboSpider():
                 url='http://www.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=100505&profile_ftype=1&is_ori=1&pre_page=%d&page=%d&pagebar=%d&id=100505%s'%(page, page, pagebar, uid)
                 html=self.get_html(url)
                 try:
-                    html=normal(json.loads(html)['data'])
+                    json_data=json.loads(html)
                 except Exception as e:
-                    print '========Error when try to get html========='
+                    print '========Error when try to load as json========='
                     print '========Error:========'
                     print e
+                    open(str(uid),'w').write(html)
+                    print '========End========'
+                    continue
+                try:
+                    html=normal(json_data['data'])
+                except Exception as e:
+                    print '========Error when try to get html from json data========='
+                    print '========Error:========'
+                    print e
+                    open(str(uid),'w').write(html)
                     print '========End========'
                     continue
                 tmp_statuses=get_statuses(html)
@@ -166,6 +176,8 @@ class WeiboSpider():
             print '========Error when constructing the dict information========'
             print '========Error:========'
             print e
+            print json_data.keys()
+            open(str(uid),'w').write(str(json_data))
             print '========End========'
             return None
         return information
