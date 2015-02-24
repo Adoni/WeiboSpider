@@ -86,14 +86,14 @@ def get_html(body):
     return html
 
 #定义接收到消息的处理方法
-def on_request(ch, method, properties, body):
+def on_request(ch, method, props, body):
     #将string类型的body转化为字典
     body=eval(body)
     #获取返回
     response = get_html(body)
     #将计算结果发送回控制中心
     ch.basic_publish(exchange='',
-                     routing_key=properties.reply_to,
+                     routing_key=props.reply_to,
                      properties=pika.BasicProperties(correlation_id = props.correlation_id),
                      body=response)
     #检查是否需要休眠

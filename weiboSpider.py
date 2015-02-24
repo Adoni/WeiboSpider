@@ -193,6 +193,7 @@ class WeiboSpider():
         user_data['information']=information
         user_data['statuses']=statuses
         user_data['parsed']=False
+        user_data['type']='new'
         return user_data
 
     def start_requests(self):
