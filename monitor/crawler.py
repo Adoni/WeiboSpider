@@ -86,7 +86,7 @@ def get_html(body):
     return html
 
 #定义接收到消息的处理方法
-def request(ch, method, properties, body):
+def on_request(ch, method, properties, body):
     #将string类型的body转化为字典
     body=eval(body)
     #获取返回
@@ -94,6 +94,7 @@ def request(ch, method, properties, body):
     #将计算结果发送回控制中心
     ch.basic_publish(exchange='',
                      routing_key=properties.reply_to,
+                     properties=pika.BasicProperties(correlation_id = props.correlation_id),
                      body=response)
     #检查是否需要休眠
     if body['need_sleep']:
@@ -114,6 +115,6 @@ if __name__ == '__main__':
     #定义队列
     channel.queue_declare(queue=settings.QUEUE_NAME)
     channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(request, queue=settings.QUEUE_NAME)
+    channel.basic_consume(on_request, queue=settings.QUEUE_NAME)
 
     channel.start_consuming()
