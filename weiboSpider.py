@@ -107,7 +107,7 @@ class WeiboSpider():
                     print '========Error when try to load as json========='
                     print '========Error:========'
                     print e
-                    open(str(uid)+'.loadjson','w').write(html)
+                    #open(str(uid)+'.loadjson','w').write(html)
                     print '========End========'
                     continue
                 try:
@@ -116,7 +116,7 @@ class WeiboSpider():
                     print '========Error when try to get html from json data========='
                     print '========Error:========'
                     print e
-                    open(str(uid)+'.gethtmlfromjsondata','w').write(str(json_data))
+                    #open(str(uid)+'.gethtmlfromjsondata','w').write(str(json_data))
                     print '========End========'
                     continue
                 tmp_statuses=get_statuses(html)
@@ -177,7 +177,7 @@ class WeiboSpider():
             print '========Error:========'
             print e
             print json_data.keys()
-            open(str(uid)+'.construct','w').write(str(json_data))
+            #open(str(uid)+'.construct','w').write(str(json_data))
             print '========End========'
             return None
         return information
