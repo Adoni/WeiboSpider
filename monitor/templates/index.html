@@ -22,6 +22,12 @@ $def with (crawlers)
       <a class="item add batch">
           Add a batch
       </a>
+      <a class="item" onclick="set_restart_auto()">
+          <i class="repeat icon"></i>Set Restart auto
+      </a>
+      <a class="item" onclick="stop_restart_auto()">
+          <i class="repeat icon"></i>Stop Restart auto
+      </a>
     </div>
 
         <table class="ui table">
@@ -121,7 +127,23 @@ $def with (crawlers)
     temp.style.display = "none"; 
     document.body.appendChild(temp); 
     temp.submit(); 
-  } 
+  }
+  function set_restart_auto() { 
+    var temp = document.createElement("form"); 
+    temp.action = "set_restart_auto"; 
+    temp.method = "post"; 
+    temp.style.display = "none"; 
+    document.body.appendChild(temp); 
+    temp.submit(); 
+  }
+  function stop_restart_auto() { 
+    var temp = document.createElement("form"); 
+    temp.action = "stop_restart_auto"; 
+    temp.method = "post"; 
+    temp.style.display = "none"; 
+    document.body.appendChild(temp); 
+    temp.submit(); 
+  }
 </script>
   <script type="text/javascript">
     $$('.ui.modal').modal('attach events', '.add.batch', 'show');

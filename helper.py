@@ -188,6 +188,13 @@ def get_average_statuses_count():
     l/=users.find().count()
     return l
 
+def clean_database():
+    from pymongo import Connection
+    con = Connection()
+    db = con.user_image
+    users=db.users
+    users.remove({'type':None})
+
 def check():
     from pymongo import Connection
     con=Connection()
@@ -364,6 +371,7 @@ def get_htmls_by_domid(html, domid):
 
 if __name__=='__main__':
     #print get_average_statuses_count()
-    check()
+    #check()
     #output_all_uids()
     #print load_headers()
+    clean_database()

@@ -1,5 +1,8 @@
 import web
 import subprocess
+import multiprocessing
+import time
+
 urls=(
     '/','index',
     '/add', 'add',
@@ -8,11 +11,31 @@ urls=(
     '/stop', 'stop',
     '/restart_all', 'restart_all',
     '/stop_all', 'stop_all',
+    '/set_restart_auto','set_restart_auto',
+    '/stop_restart_auto','stop_restart_auto',
     )
 app = web.application(urls, globals())
 render = web.template.render('templates/')
-
 crawlers=[]
+
+def restart_all_crawlers():
+    for i in range(0,len(crawlers)):
+        try:
+            crawlers[i].terminate()
+        except:
+            pass
+        order='python crawler.py '+str(i+1)
+        print order
+        crawlers[i]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
+
+def clock_restart(period):
+    while 1:
+        print 'Restart automatically'
+        restart_all_crawlers()
+        time.sleep(period)
+
+clock=multiprocessing.Process(target=clock_restart, args=(10, ))
+
 class index:
     def GET(self):
         print '================'
@@ -62,15 +85,9 @@ class restart:
 
 class restart_all():
     def POST(self):
-        for i in range(0,len(crawlers)):
-            try:
-                crawlers[i].terminate()
-            except:
-                pass
-            order='python crawler.py '+str(i+1)
-            print order
-            crawlers[i]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
+        restart_all_crawlers()
         raise web.seeother('/')
+
 
 class stop_all():
     def POST(self):
@@ -80,6 +97,22 @@ class stop_all():
             except:
                 pass
         raise web.seeother('/')
+
+class set_restart_auto:
+    def POST(self):
+        #try:
+        #    period=int(web.input(name=None).period)
+        #except:
+        #    raise web.seeother('/')
+        clock.start()
+        raise web.seeother('/')
+class stop_restart_auto:
+    def POST(self):
+        clock.terminate()
+        raise web.seeother('/')
+
+
+
 
 web.webapi.internalerror = web.debugerror
 if __name__ == "__main__":
