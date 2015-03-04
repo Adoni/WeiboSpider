@@ -18,10 +18,22 @@ app = web.application(urls, globals())
 render = web.template.render('templates/')
 crawlers=[]
 
+def kill(popen):
+    popen.terminate()
+    pid=popen.pid
+    try:
+        process = psutil.Process(pid)
+    except:
+        print "error"
+        return
+    for proc in process.get_children(recursive=True):
+        proc.kill()
+    process.kill()
+
 def restart_all_crawlers():
     for i in range(0,len(crawlers)):
         try:
-            crawlers[i].terminate()
+            kill(crawlers[i])
         except:
             pass
         order='python crawler.py '+str(i+1)
@@ -66,7 +78,7 @@ class stop:
     def POST(self):
         i=web.input(name=None)
         try:
-            crawlers[int(i.crawler_id)].terminate()
+            kill(crawlers[int(i.crawler_id)])
         except:
             pass
         raise web.seeother('/')
@@ -75,7 +87,7 @@ class restart:
     def POST(self):
         i=web.input(name=None)
         try:
-            crawlers[int(i.crawler_id)].terminate()
+            kill(crawlers[int(i.crawler_id)])
         except:
             pass
         order='python crawler.py '+str(int(i.crawler_id)+1)
@@ -93,7 +105,7 @@ class stop_all():
     def POST(self):
         for i in range(0,len(crawlers)):
             try:
-                crawlers[i].terminate()
+                kill(crawlers[i])
             except:
                 pass
         raise web.seeother('/')
