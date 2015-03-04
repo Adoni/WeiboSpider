@@ -43,32 +43,6 @@ class WeiboSpider():
         body={'url':url, 'headers':self.all_headers['UserStatus'],'need_sleep':True}
         return self.deliver.request(body)
 
-    def parse_text(self, text):
-        uri_base = "http://127.0.0.1:12345/ltp"
-        data = {
-                's': text.encode('utf8'),
-                'x': 'n',
-                'c': 'utf-8',
-                't': 'ws'}
-
-        request = urllib2.Request(uri_base)
-        params = urllib.urlencode(data)
-        try:
-            result=[]
-            response = urllib2.urlopen(request, params)
-            content = response.read().strip()
-            tree=etree.XML(content)
-            nodes=tree.xpath('//word')
-            for node in nodes:
-                result.append(node.get('cont'))
-            return result
-        except Exception as e:
-            print '========Error when parse text========'
-            print '========Error:========'
-            print e
-            print '========End========'
-            return None
-
     #Use this function to take emotions from user posts
     def get_emoticons(self, text):
         pattern_normal='\[[^\]]*\]'

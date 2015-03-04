@@ -4,7 +4,10 @@ import random
 import time
 import cPickle
 import lxml.html
+from lxml import etree
 import json
+import urllib
+import urllib2
 
 def get_statuses(html):
 
@@ -88,6 +91,32 @@ def get_statuses(html):
         s['like']=like
         statuses.append(s)
     return statuses
+
+def parse_text(text):
+    base_url = "http://127.0.0.1:12345/ltp"
+    data = {
+            's': text.encode('utf8'),
+            'x': 'n',
+            'c': 'utf-8',
+            't': 'ws'}
+
+    request = urllib2.Request(base_url)
+    params = urllib.urlencode(data)
+    try:
+        result=[]
+        response = urllib2.urlopen(request, params)
+        content = response.read().strip()
+        tree=etree.XML(content)
+        nodes=tree.xpath('//word')
+        for node in nodes:
+            result.append(node.get('cont'))
+        return result
+    except Exception as e:
+        print '========Error when parse text========'
+        print '========Error:========'
+        print e
+        print '========End========'
+        return None
 
 def get_href_from_text(text, html):
     pat='<a[^<,>]*>'+text+'<'
@@ -374,4 +403,15 @@ if __name__=='__main__':
     #check()
     #output_all_uids()
     #print load_headers()
-    clean_database()
+    #clean_database()
+    from pymongo import Connection
+    con = Connection()
+    db = con.user_image
+    users=db.users
+    print users.count()
+    for user in users.find().limit(10):
+        print user['information']['uid']
+        statuses=user['statuses']
+        for i in xrange(len(statuses)):
+            statuses[i]['text']=parse_text(statuses[i]['text'])
+        users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
