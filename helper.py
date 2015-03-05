@@ -409,9 +409,12 @@ if __name__=='__main__':
     db = con.user_image
     users=db.users
     print users.count()
-    for user in users.find().limit(10):
+    for user in users.find():#.limit(10):
         print user['information']['uid']
         statuses=user['statuses']
         for i in xrange(len(statuses)):
+            parsed_text=parse_text(statuses[i]['text'])
+            if parsed_text is None:
+                continue
             statuses[i]['text']=parse_text(statuses[i]['text'])
         users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
