@@ -58,7 +58,7 @@ def get_statuses(html):
         emoticons_list=status.xpath('./div[1]/div[2]/div[1]//img')
         emoticons=[]
         for emoticon in emoticons_list:
-            emoticon=emoticon.get('alt')
+            emoticon=emoticon.get('src')
             emoticons.append(emoticon)
         return emoticons
 
@@ -409,12 +409,13 @@ if __name__=='__main__':
     db = con.user_image
     users=db.users
     print users.count()
-    for user in users.find():#.limit(10):
+    for user in users.find({'parsed':False}):#.limit(10):
         print user['information']['uid']
         statuses=user['statuses']
         for i in xrange(len(statuses)):
             parsed_text=parse_text(statuses[i]['text'])
             if parsed_text is None:
+                print statuses[i]#['text']
                 continue
             statuses[i]['text']=parse_text(statuses[i]['text'])
-        users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
+        #users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
