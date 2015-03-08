@@ -106,7 +106,7 @@ def on_request(ch, method, props, body):
 if __name__ == '__main__':
     #载入cookie
     cookie_file_name='./cookies/cookie_'+str(sys.argv[1])
-    install_cookie(cookie_file_name)
+    #install_cookie(cookie_file_name)
     #连接rabbitmq服务器
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='localhost'))

@@ -2,6 +2,7 @@ import web
 import subprocess
 import multiprocessing
 import time
+import psutil
 
 urls=(
     '/','index',
@@ -23,7 +24,8 @@ def kill(popen):
     pid=popen.pid
     try:
         process = psutil.Process(pid)
-    except:
+    except Exception as e:
+        print e
         print "error"
         return
     for proc in process.get_children(recursive=True):

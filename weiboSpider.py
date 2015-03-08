@@ -39,8 +39,8 @@ class WeiboSpider():
         self.users_collection=self.db.users
         self.corpse_users=self.db.corpse_users
 
-    def get_html(self, url):
-        body={'url':url, 'headers':self.all_headers['UserStatus'],'need_sleep':True}
+    def get_html(self, url, headers):
+        body={'url':url, 'headers':headers, 'need_sleep':True}
         return self.deliver.request(body)
 
     #Use this function to take emotions from user posts
@@ -63,7 +63,7 @@ class WeiboSpider():
             print 'Try to get %d pages, and now we got %d statuses'%(page,len(statuses))
             #获取基础的网页
             url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(uid,page)
-            html=self.get_html(url)
+            html=self.get_html(url, self.all_headers['UserStatus'])
             html=get_htmls_by_domid(html,'Pl_Official_MyProfileFeed__')
             if not html:
                 break
@@ -74,7 +74,7 @@ class WeiboSpider():
             statuses+=tmp_statuses
             for pagebar in range(0,2):
                 url='http://www.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=100505&profile_ftype=1&is_ori=1&pre_page=%d&page=%d&pagebar=%d&id=100505%s'%(page, page, pagebar, uid)
-                html=self.get_html(url)
+                html=self.get_html(url, self.all_headers['UserStatus'])
                 try:
                     json_data=json.loads(html)
                 except Exception as e:
@@ -116,10 +116,20 @@ class WeiboSpider():
         else:
             return all_uids[0:count]
 
+    def get_user_birthday(self,uid):
+        complete_url='http://weibo.com'#/p/100505'+uid+'/info?mod=pedit_more'
+        html=self.get_html(complete_url, self.all_headers['Birthday'])
+        open('./hehe.html','w').write(html)
+        return
+        html=get_htmls_by_domid(html,'Pl_Official_MyProfileFeed__')
+        if not html:
+            return None
+        html=normal(html[0])
+
     def get_user_information(self, uid):
         base_url='https://api.weibo.com/2/users/show.json?'
         complete_url=base_url+'access_token='+self.access_token+'&uid='+str(uid)
-        html=self.get_html(complete_url)
+        html=self.get_html(complete_url, self.all_headers['Simple'])
         if(html=='' or 'error' in html):
             print('========Html is empty or error in html========')
             print '=======End========'
@@ -197,4 +207,6 @@ if __name__=='__main__':
     spider=WeiboSpider()
     spider.start_requests()
     #uid='2412928981'
-    #spider.get_user_information(uid)
+    #uid='3623327573'
+    #print spider.get_user_statuses(uid)[0]['text']
+    #spider.get_user_birthday(uid)

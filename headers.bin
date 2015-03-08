@@ -12,3 +12,13 @@ Cache-Control:max-age=0
 Connection:keep-alive
 User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36
 END
+BEGIN Birthday
+Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language:zh-CN,zh;q=0.8,en;q=0.6
+Cache-Control:max-age=0
+Connection:keep-alive
+Host:weibo.com
+Cookie:SINAGLOBAL=968399799894.5415.1424607979995; YF-Ugrow-G0=ad06784f6deda07eea88e095402e4243; _s_tentry=-; Apache=8034332641400.396.1425703260773; ULV=1425703260785:2:1:1:8034332641400.396.1425703260773:1424607980006; YF-V5-G0=1312426fba7c62175794755e73312c7d; YF-Page-G0=3d55e26bde550ac7b0d32a2ad7d6fa53; myuid=3623327573; login_sid_t=ac27584a325124506022ba6dc58b5457; UOR=developer.51cto.com,widget.weibo.com,login.sina.com.cn; appkey=; SUS=SID-5518729600-1425795922-GZ-dm097-9731c40c0564aeb1da19e654a31a6063; SUE=es%3Dd2721a51c8eaa7e515043ef8dd657262%26ev%3Dv1%26es2%3Dd76ec021abba80f8efe31b8cf19b1d93%26rs0%3DqofbMEcOsyoYzQr4co5hzKbiIhPhI10XAcwXk9%252Bd0JR1layVDBy36jQu4isoSL0QGAQGfenoO9YvrgOn2%252B2ahmSdUK2pTLiC4ruwq4LUJSZKKe8k7MfsLkzmnh6QBwXyiZpaBez8p6sNzguAROvGz18rIGfD%252BQ91uELXwAMPlkY%253D%26rv%3D0; SUP=cv%3D1%26bt%3D1425795922%26et%3D1425882322%26d%3Dc909%26i%3D6063%26us%3D1%26vf%3D0%26vt%3D0%26ac%3D27%26st%3D0%26uid%3D5518729600%26name%3Dadoni_spider1%2540163.com%26nick%3Dadoni_spider_1%26fmp%3D%26lcp%3D; SUB=_2A255_5sCDeTxGeNL6loW8ifKyzyIHXVajIvKrDV8PUNbuNBuLUv2kW9pnYT_meZPb8IQ8F45joX4foshhA..; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhWDXeNEehUidkXekqaL9uc5JpX5K2t; SUHB=0IIF2nSwUuvfL_; ALF=1457331920; SSOLoginState=1425795922; un=adoni_spider1@163.com; wvr=6; WBtopGlobal_register_version=50a1e1c073454fe6
+Referer:http://weibo.com/login.php
+User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36
+END
