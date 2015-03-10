@@ -52,7 +52,7 @@ class WeiboSpider():
             text=text.replace(emoticon,' ')
         return text, emoticons
 
-    def get_user_statuses(self, uid):
+    def get_user_statuses(self, uid, user_name=None):
         base_url='https://api.weibo.com/2/statuses/timeline_batch.json?'
         #statuses是要返回的数据
         statuses=[]
@@ -62,10 +62,12 @@ class WeiboSpider():
                 break
             print 'Try to get %d pages, and now we got %d statuses'%(page,len(statuses))
             #获取基础的网页
-            url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(uid,page)
+            #url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(uid,page)
+            url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(user_name,page)
             html=self.get_html(url, self.all_headers['UserStatus'])
             html=get_htmls_by_domid(html,'Pl_Official_MyProfileFeed__')
             if not html:
+                print url
                 break
             html=normal(html[0])
             tmp_statuses=get_statuses(html)
@@ -97,6 +99,9 @@ class WeiboSpider():
                 if tmp_statuses==[]:
                     continue
                 statuses+=tmp_statuses
+                print statuses[-1]['time']
+                if '2015' in statuses[-1]['time']:
+                    break
             page+=1
         return statuses
 
@@ -117,7 +122,9 @@ class WeiboSpider():
             return all_uids[0:count]
 
     def get_user_birthday(self,uid):
-        complete_url='http://weibo.com'#/p/100505'+uid+'/info?mod=pedit_more'
+        #complete_url='http://weibo.com/p/100505%s/info?mod=pedit_more'%uid
+        complete_url='http://weibo.com/masu?from=feed&loc=at&nick=马苏'
+        #complete_url='http://weibo.com/p/1005051738932247/info'
         html=self.get_html(complete_url, self.all_headers['Birthday'])
         open('./hehe.html','w').write(html)
         return
@@ -205,8 +212,11 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    spider.start_requests()
+    #spider.start_requests()
     #uid='2412928981'
     #uid='3623327573'
     #print spider.get_user_statuses(uid)[0]['text']
     #spider.get_user_birthday(uid)
+    uid='104802'
+    user_name='hottopic'
+    print spider.get_user_statuses(uid, user_name)

@@ -76,7 +76,7 @@
     // 跳转回初始地址。
     var back = function() {
 
-        var url = "http://weibo.com/?retcode=6102";
+        var url = "http://weibo.com/masu?from=feed&loc=at&nick=椹嫃";
         if (url != "none") {
             window.location.href = url;
         }
@@ -132,7 +132,7 @@
         // 身份恢复成功走广播流程，否则走创建访客流程。
         if (response["retcode"] == 20000000) {
 
-            var url = "http://weibo.com/?retcode=6102";
+            var url = "http://weibo.com/masu?from=feed&loc=at&nick=椹嫃";
             var alt = response["data"]["alt"];
             var savestate = response["data"]["savestate"];
             if (alt != "" && url != "none") {
@@ -155,7 +155,7 @@
     // 出错情况返回登录页。
     var error_back = function (msg) {
 
-        var url = "http://weibo.com/?retcode=6102";
+        var url = "http://weibo.com/masu?from=feed&loc=at&nick=椹嫃";
         if (url != "none") {
 
             if (url.indexOf("ssovie4c55=0") === -1) {
