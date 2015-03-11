@@ -235,6 +235,4 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    #spider.start_requests()
-    print spider.get_user_information('3623327573')
-    print spider.get_user_statuses('3623327573')
+    spider.start_requests()
