@@ -39,8 +39,8 @@ class WeiboSpider():
         self.users_collection=self.db.users
         self.corpse_users=self.db.corpse_users
 
-    def get_html(self, url, headers):
-        body={'url':url, 'headers':headers, 'need_sleep':True}
+    def get_html(self, url, headers=None, need_sleep=True, params=None):
+        body={'url':url, 'headers':headers, 'need_sleep':True, 'params':params}
         return self.deliver.request(body)
 
     #Use this function to take emotions from user posts
@@ -63,9 +63,17 @@ class WeiboSpider():
             print 'Try to get %d pages, and now we got %d statuses'%(page,len(statuses))
             #获取基础的网页
             #url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(uid,page)
-            url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(user_name,page)
-            html=self.get_html(url, self.all_headers['UserStatus'])
-            html=get_htmls_by_domid(html,'Pl_Official_MyProfileFeed__')
+            url='http://www.weibo.com/%s'%uid
+            params={
+                'is_search':0,
+                'visible':0,
+                'is_ori':1,
+                'is_tag':0,
+                'profile_ftype':1,
+                'page':page
+            }
+            html=self.get_html(url=url, headers=self.all_headers['UserStatus'], params=params)
+            html=get_htmls_by_domid(html.text,'Pl_Official_MyProfileFeed__')
             if not html:
                 print url
                 break
@@ -75,10 +83,21 @@ class WeiboSpider():
                 break
             statuses+=tmp_statuses
             for pagebar in range(0,2):
-                url='http://www.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=100505&profile_ftype=1&is_ori=1&pre_page=%d&page=%d&pagebar=%d&id=100505%s'%(page, page, pagebar, uid)
-                html=self.get_html(url, self.all_headers['UserStatus'])
+                #url='http://www.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=100505&profile_ftype=1&is_ori=1&pre_page=%d&page=%d&pagebar=%d&id=100505%s'%(page, page, pagebar, uid)
+                url='http://www.weibo.com/p/aj/v6/mblog/mbloglist'
+                params={
+                    'ajwvr':6,
+                    'domain':100505,
+                    'profile_ftype':1,
+                    'is_ori':1,
+                    'pre_page':page,
+                    'page':page,
+                    'pagebar':pagebar,
+                    'id':'100505'+uid
+                }
+                html=self.get_html(url=url, headers=self.all_headers['UserStatus'], params=params)
                 try:
-                    json_data=json.loads(html)
+                    json_data=html.json()
                 except Exception as e:
                     print '========Error when try to load as json========='
                     print '========Error:========'
@@ -134,19 +153,23 @@ class WeiboSpider():
         html=normal(html[0])
 
     def get_user_information(self, uid):
-        base_url='https://api.weibo.com/2/users/show.json?'
-        complete_url=base_url+'access_token='+self.access_token+'&uid='+str(uid)
-        html=self.get_html(complete_url, self.all_headers['Simple'])
+        url='https://api.weibo.com/2/users/show.json'
+        params={
+            'access_token':self.access_token,
+            'uid':str(uid)
+        }
+        html=self.get_html(url=url, headers=self.all_headers['Simple'], params=params)
         if(html=='' or 'error' in html):
             print('========Html is empty or error in html========')
             print '=======End========'
+            print html
             print '=======Complete url========'
-            print(complete_url)
+            print(url)
             print '=======End========'
             return None
         html=html
         try:
-            json_data=json.loads(html)
+            json_data=html.json()
         except:
             print '=======Error when load json========'
             print '=======End========'
@@ -213,10 +236,5 @@ class WeiboSpider():
 if __name__=='__main__':
     spider=WeiboSpider()
     #spider.start_requests()
-    #uid='2412928981'
-    #uid='3623327573'
-    #print spider.get_user_statuses(uid)[0]['text']
-    #spider.get_user_birthday(uid)
-    uid='104802'
-    user_name='hottopic'
-    print spider.get_user_statuses(uid, user_name)
+    print spider.get_user_information('3623327573')
+    print spider.get_user_statuses('3623327573')

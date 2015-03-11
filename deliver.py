@@ -3,6 +3,8 @@
 import pika
 import settings
 import uuid
+import cPickle
+import StringIO
 
 class Deliver(object):
     def __init__(self):
@@ -20,7 +22,7 @@ class Deliver(object):
     #定义接收到返回消息的处理方法
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
-            self.response = body
+            self.response=cPickle.load(StringIO.StringIO(body))
 
     def request(self, body):
         self.response = None

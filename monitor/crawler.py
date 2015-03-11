@@ -10,52 +10,59 @@ import random
 import time
 import copy
 import settings
+import requests
+import cPickle
+import StringIO
 
 global cookieJar
 global sleep_time
 global headers
+global session
 
 def install_cookie(cookie_file_name):
     global cookieJar
+    global session
     cookieJar = cookielib.LWPCookieJar(cookie_file_name)
     cookieJar.load( ignore_discard=True, ignore_expires=True)
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar));
-    urllib2.install_opener(opener);
+    #opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar));
+    #urllib2.install_opener(opener);
+    #use global session to save and reload cookies
+    session=requests.Session()
+    session.cookies=cookieJar
     print('Install Cookie Done')
 
-def get_request(body):
-    if('timestamp' in body['url']):
-        url=body['url'].replace('timestamp', str(int(time.time()*1000)))
-    else:
-        url=body['url']
-    headers=body['headers']
-    request=urllib2.Request(
-            url=url,
-#            headers=headers
-            )
-    return request
+def update_time(body):
+    if 'timestamp' in body['params']:
+        body['params']['timestamp']=str(int(time.time()*1000))
+    return body
 
 def get_html(body):
     global sleep_time
-    request=get_request(body)
+    global session
     try:
-        request=get_request(body)
-        html=urllib2.urlopen(request, timeout=10).read()
-    except:
+        body=update_time(body)
+        html=session.get(url=body['url'], params=body['params'], timeout=20)
+    except requests.exceptions.ConnectionError:
+        #print '================\nConnectionError\n===================='
+        raise Exception('==============\nConnectionError\n===============')
+    except requests.exceptions.Timeout:
         print('Sleeping...')
         print(body)
         #sleep(sleep_time)
         try:
-            html=urllib2.urlopen(request, timeout=10).read()
-        except:
+            body=update_time(body)
+            html=session.get(url=body['url'], params=body['params'], timeout=20)
+        except Exception as e:
             print 'get url error'
+            print e
             return ''
+    except:
+        raise Exception('Other reasons to stop')
 
-    print html
-    if('location.replace' in html):
+    if('location.replace' in html.text):
         print('Redirect..')
         print('Try to get target')
-        target=get_target(html)
+        target=get_target(html.text)
         if(target==None):
             print 'get target error'
             return ''
@@ -63,21 +70,22 @@ def get_html(body):
             print('Got target')
             print('Retry to get html')
             body['url']=target[0]
-            request=get_request(body)
             try:
-                html=urllib2.urlopen(request).read()
+                body=update_time(body)
+                html=session.get(url=body['url'], params=body['params'], timeout=20)
                 print('Got html')
                 print('Saveing cookie')
-                #cookieJar.save()
+                cookieJar.save(ignore_discard=True)
                 print('Save cookie')
             except:
+                print 'Sleeping'
                 sleep(sleep_time)
                 try:
-                    request=get_request(body)
-                    html=urllib2.urlopen(request).read()
+                    body=update_time(body)
+                    html=session.get(url=body['url'], params=body['params'], timeout=20)
                     print('Got html')
                     print('Saveing cookie')
-                    #cookieJar.save()
+                    cookieJar.save(ignore_discard=True)
                     print('Save cookie')
                 except:
                     print('Error!!!!!')
@@ -91,12 +99,15 @@ def on_request(ch, method, props, body):
     #将string类型的body转化为字典
     body=eval(body)
     #获取返回
-    response = get_html(body)
+    html=get_html(body)
+    output_file=StringIO.StringIO()
+    cPickle.dump(html, output_file)
+    output_file.flush()
     #将计算结果发送回控制中心
     ch.basic_publish(exchange='',
                      routing_key=props.reply_to,
                      properties=pika.BasicProperties(correlation_id = props.correlation_id),
-                     body=response)
+                     body=output_file.getvalue())
     #检查是否需要休眠
     if body['need_sleep']:
         sleep(sleep_time)
