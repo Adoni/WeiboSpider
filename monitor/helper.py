@@ -7,16 +7,16 @@ import json
 
 def sleep(sleep_time):
     sleep_time=sleep_time+random.randint(-2,2)
-    print sleep_time
+    #print sleep_time
     if sleep_time<=0:
         sleep_time=0
-    print('Sleeping for '+str(sleep_time)+' seconds')
+    #print('Sleeping for '+str(sleep_time)+' seconds')
     time.sleep(sleep_time)
-    print('Wake up')
+    #print('Wake up')
 
 def get_target(html):
     if(not 'location.replace' in html):
-        print('No location.replace in html')
+        #print('No location.replace in html')
         return None
     pat="location.replace\('[^']*'\)"
     a=re.findall(pat,html)

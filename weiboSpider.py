@@ -73,6 +73,9 @@ class WeiboSpider():
                 'page':page
             }
             html=self.get_html(url=url, headers=self.all_headers['UserStatus'], params=params)
+            if html=='':
+                print url
+                break
             html=get_htmls_by_domid(html.text,'Pl_Official_MyProfileFeed__')
             if not html:
                 print url
@@ -118,9 +121,6 @@ class WeiboSpider():
                 if tmp_statuses==[]:
                     continue
                 statuses+=tmp_statuses
-                print statuses[-1]['time']
-                if '2015' in statuses[-1]['time']:
-                    break
             page+=1
         return statuses
 
@@ -158,7 +158,7 @@ class WeiboSpider():
             'access_token':self.access_token,
             'uid':str(uid)
         }
-        html=self.get_html(url=url, headers=self.all_headers['Simple'], params=params)
+        html=self.get_html(url=url, headers=self.all_headers['Simple'], params=params, need_sleep=False)
         if(html=='' or 'error' in html):
             print('========Html is empty or error in html========')
             print '=======End========'

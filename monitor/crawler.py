@@ -29,7 +29,7 @@ def install_cookie(cookie_file_name):
     #use global session to save and reload cookies
     session=requests.Session()
     session.cookies=cookieJar
-    print('Install Cookie Done')
+    #print('Install Cookie Done')
 
 def update_time(body):
     if 'timestamp' in body['params']:
@@ -44,52 +44,54 @@ def get_html(body):
         html=session.get(url=body['url'], params=body['params'], timeout=20)
     except requests.exceptions.ConnectionError:
         #print '================\nConnectionError\n===================='
-        raise Exception('==============\nConnectionError\n===============')
+        #raise Exception('==============\nConnectionError\n===============')
+        return ''
     except requests.exceptions.Timeout:
-        print('Sleeping...')
-        print(body)
+        #print('Sleeping...')
+        #print(body)
         #sleep(sleep_time)
         try:
             body=update_time(body)
             html=session.get(url=body['url'], params=body['params'], timeout=20)
         except Exception as e:
-            print 'get url error'
-            print e
+            #print 'get url error'
+            #print e
             return ''
     except:
-        raise Exception('Other reasons to stop')
+        return ''
+        #raise Exception('Other reasons to stop')
 
     if('location.replace' in html.text):
-        print('Redirect..')
-        print('Try to get target')
+        #print('Redirect..')
+        #print('Try to get target')
         target=get_target(html.text)
         if(target==None):
-            print 'get target error'
+            #print 'get target error'
             return ''
         else:
-            print('Got target')
-            print('Retry to get html')
+            #print('Got target')
+            #print('Retry to get html')
             body['url']=target[0]
             try:
                 body=update_time(body)
                 html=session.get(url=body['url'], params=body['params'], timeout=20)
-                print('Got html')
-                print('Saveing cookie')
+                #print('Got html')
+                #print('Saveing cookie')
                 cookieJar.save(ignore_discard=True)
-                print('Save cookie')
+                #print('Save cookie')
             except:
-                print 'Sleeping'
+                #print 'Sleeping'
                 sleep(sleep_time)
                 try:
                     body=update_time(body)
                     html=session.get(url=body['url'], params=body['params'], timeout=20)
-                    print('Got html')
-                    print('Saveing cookie')
+                    #print('Got html')
+                    #print('Saveing cookie')
                     cookieJar.save(ignore_discard=True)
-                    print('Save cookie')
+                    #print('Save cookie')
                 except:
-                    print('Error!!!!!')
-                    print 'refresh cookie error'
+                    #print('Error!!!!!')
+                    #print 'refresh cookie error'
                     exit(0)
                     return ''
     return html
@@ -112,7 +114,7 @@ def on_request(ch, method, props, body):
     if body['need_sleep']:
         sleep(sleep_time)
     ch.basic_ack(delivery_tag = method.delivery_tag)
-    print '=========Complete Crawl========='
+    #print '=========Complete Crawl========='
 
 
 if __name__ == '__main__':
@@ -123,7 +125,7 @@ if __name__ == '__main__':
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='localhost'))
     channel = connection.channel()
-    sleep_time=50
+    sleep_time=40
     #定义队列
     channel.queue_declare(queue=settings.QUEUE_NAME)
     channel.basic_qos(prefetch_count=1)

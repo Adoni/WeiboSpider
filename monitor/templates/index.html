@@ -34,6 +34,7 @@ $def with (crawlers)
           <thead>
             <tr>
               <th>Number</th>
+              <th>Pid</th>
               <th>Status</th>
               <th>Method</th>
             </tr>
@@ -43,6 +44,9 @@ $def with (crawlers)
             <tr>
               <td>
                 $crawlers.index(crawler)
+              </td>
+              <td>
+                $crawler.pid
               </td>
               $if crawler.poll() is not None:
                 <td class="negative">Stopped</td>

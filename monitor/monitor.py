@@ -26,7 +26,7 @@ def kill(popen):
         process = psutil.Process(pid)
     except Exception as e:
         print e
-        print "error"
+        print "Error when stop process"
         return
     for proc in process.get_children(recursive=True):
         proc.kill()
@@ -40,7 +40,8 @@ def restart_all_crawlers():
             pass
         order='python crawler.py '+str(i+1)
         print order
-        crawlers[i]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
+        crawlers[i]=subprocess.Popen(order,shell=True,stdout=None,stderr=None)
+        #crawlers[i]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
 
 def clock_restart(period):
     while 1:
@@ -61,7 +62,8 @@ class add:
     def POST(self):
         order='python ./crawler.py '+str(len(crawlers)+1)
         print order
-        crawlers.append(subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None))
+        crawlers.append(subprocess.Popen(order,shell=True,stdout=None,stderr=None))
+        #crawlers.append(subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None))
         raise web.seeother('/')
 
 class add_a_batch:
@@ -73,7 +75,8 @@ class add_a_batch:
         for i in range(0,count):
             order='python ./crawler.py '+str(len(crawlers)+1)
             print order
-            crawlers.append(subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None))
+            #crawlers.append(subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None))
+            crawlers.append(subprocess.Popen(order,shell=True,stdout=None,stderr=None))
         raise web.seeother('/')
 
 class stop:
@@ -94,7 +97,8 @@ class restart:
             pass
         order='python crawler.py '+str(int(i.crawler_id)+1)
         print order
-        crawlers[int(i.crawler_id)]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
+        crawlers[int(i.crawler_id)]=subprocess.Popen(order,shell=True,stdout=None,stderr=None)
+        #crawlers[int(i.crawler_id)]=subprocess.Popen(order,shell=True,stdout=subprocess.PIPE,stderr=None)
         raise web.seeother('/')
 
 class restart_all():

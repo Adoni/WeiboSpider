@@ -112,11 +112,16 @@ def parse_text(text):
             result.append(node.get('cont'))
         return result
     except Exception as e:
-        print '========Error when parse text========'
-        print '========Error:========'
-        print e
-        print '========End========'
-        return None
+        if e.reason=='EMPTY SENTENCE':
+            print 'EMPTY SENTENCE'
+            return ''
+        else:
+            print '========Error when parse text========'
+            print '========Error:========'
+            print e
+            print [text]
+            print '========End========'
+            return None
 
 def get_href_from_text(text, html):
     pat='<a[^<,>]*>'+text+'<'
@@ -409,13 +414,27 @@ if __name__=='__main__':
     db = con.user_image
     users=db.users
     print users.count()
+    try:
+        # UCS-4
+        highpoints = re.compile(u'([\U00002600-\U000027BF])|([\U0001f300-\U0001f64F])|([\U0001f680-\U0001f6FF])')
+        highpoints = re.compile(u'[\U00010000-\U0010ffff]')
+    except re.error:
+        # UCS-2
+        highpoints = re.compile(u'([\u2600-\u27BF])|([\uD83C][\uDF00-\uDFFF])|([\uD83D][\uDC00-\uDE4F])|([\uD83D][\uDE80-\uDEFF])')
     for user in users.find({'parsed':False}):#.limit(10):
         print user['information']['uid']
         statuses=user['statuses']
+        success=True
         for i in xrange(len(statuses)):
-            parsed_text=parse_text(statuses[i]['text'])
+            emojs=highpoints.findall(statuses[i]['text'])
+            puretext=highpoints.sub('',statuses[i]['text'])
+            parsed_text=parse_text(puretext)
             if parsed_text is None:
-                print statuses[i]#['text']
+                success=False
+                print emojs
+                print [statuses[i]['text']]
                 continue
-            statuses[i]['text']=parse_text(statuses[i]['text'])
-        #users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
+            statuses[i]['text']=parse_text
+            statuses[i]['emoticons']+=emojs
+        #if success:
+            #users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
