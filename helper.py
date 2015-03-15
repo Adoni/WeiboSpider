@@ -114,7 +114,7 @@ def parse_text(text):
     except Exception as e:
         if e.reason=='EMPTY SENTENCE':
             print 'EMPTY SENTENCE'
-            return ''
+            return []
         else:
             print '========Error when parse text========'
             print '========Error:========'
@@ -421,8 +421,10 @@ if __name__=='__main__':
     except re.error:
         # UCS-2
         highpoints = re.compile(u'([\u2600-\u27BF])|([\uD83C][\uDF00-\uDFFF])|([\uD83D][\uDC00-\uDE4F])|([\uD83D][\uDE80-\uDEFF])')
-    for user in users.find({'parsed':False}):#.limit(10):
-        print user['information']['uid']
+    #for user in users.find({'parsed':False}).limit(10):
+    for user in users.find().limit(10):
+        if user['parsed']:
+            continue
         statuses=user['statuses']
         success=True
         for i in xrange(len(statuses)):
@@ -434,7 +436,8 @@ if __name__=='__main__':
                 print emojs
                 print [statuses[i]['text']]
                 continue
-            statuses[i]['text']=parse_text
+            statuses[i]['text']=parsed_text
             statuses[i]['emoticons']+=emojs
-        #if success:
-            #users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
+        if success:
+            print user['information']['uid']
+            users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
