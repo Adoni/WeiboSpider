@@ -185,6 +185,7 @@ class WeiboSpider():
             information['followers_count']=str(json_data['followers_count'])
             information['friends_count']=str(json_data['friends_count'])
             information['bi_followers_count']=str(json_data['bi_followers_count'])
+            information['avatar_large']=str(json_data['avatar_large'])
             information['verified']=str(json_data['verified'])
         except Exception as e:
             print '========Error when constructing the dict information========'
@@ -208,6 +209,10 @@ class WeiboSpider():
         user_data['statuses']=statuses
         user_data['parsed']=False
         user_data['type']='new'
+        if 'avatar_large' in information:
+            user_data['got_avatar_large']=True
+        else:
+            user_data['got_avatar_large']=False
         return user_data
 
     def start_requests(self):
