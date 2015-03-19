@@ -1,0 +1,14 @@
+ltp_data v3.1.2
+===============
+
+release date
+------------
+2014-06-16
+
+release note
+------------
+* incorporate annotated micro-blog data into the training set.
+
+authors
+-------
+* HAN, Bing <bhan@ir.hit.edu.cn>

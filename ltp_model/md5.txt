@@ -1,0 +1,12 @@
+d41d8cd98f00b204e9800998ecf8427e  ./md5.txt
+3ce98ab62a03546a45f350006cfab5ba  ./ner.model
+cb91bec92ef81a40539d91a0b6814d65  ./cws.model
+21b4906f753893cbc8ee6c16061dedec  ./parser.model
+7e3e2421d5b7bb181d2ffee807a0348f  ./ltp.cnf
+928384f4c94f72682feb5d6079975e53  ./pos.model
+96bd0bcf595a3002b1cc7ef1fe3b6e21  ./changelog
+59903e3038aa54903dbf48d718f5f75f  ./srl/prg.model
+81d883716ce09f79f3216ffcda9a6db2  ./srl/Chinese.xml
+8c6fa3705a778daa636c996d82ca17aa  ./srl/srl.model
+52231a85dc6a119e87eb3ff86c9ff005  ./srl/srl.cfg
+79a84828694ed3ed5482b6d33dea7dd7  ./version

@@ -1,0 +1,17 @@
+# resources to be loaded, valid value includes: ws, pos, ner, dp, srl
+target = all
+
+# path to the segment model
+segmentor-model = /data/yjliu/ltp-models/3.1.0/cws.model
+
+# path to the postag model
+postagger-model = /data/yjliu/ltp-models/3.1.0/pos.model
+
+# path to the parser model
+parser-model = /data/yjliu/ltp-models/3.1.0/parser.model
+
+# path to the ner model
+ner-model = /data/yjliu/ltp-models/3.1.0/ner.model
+
+# dir to the srl resource
+srl-data = /data/yjliu/ltp-models/3.1.0/srl/

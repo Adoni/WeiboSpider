@@ -8,6 +8,11 @@ from lxml import etree
 import json
 import urllib
 import urllib2
+from pyltp import Segmentor
+
+global segmentor
+segmentor = Segmentor()
+segmentor.load("./ltp_model/cws.model")
 
 def get_statuses(html):
 
@@ -93,35 +98,46 @@ def get_statuses(html):
     return statuses
 
 def parse_text(text):
-    base_url = "http://127.0.0.1:12345/ltp"
-    data = {
-            's': text.encode('utf8'),
-            'x': 'n',
-            'c': 'utf-8',
-            't': 'ws'}
-
-    request = urllib2.Request(base_url)
-    params = urllib.urlencode(data)
     try:
-        result=[]
-        response = urllib2.urlopen(request, params)
-        content = response.read().strip()
-        tree=etree.XML(content)
-        nodes=tree.xpath('//word')
-        for node in nodes:
-            result.append(node.get('cont'))
-        return result
+        text=text.encode('utf8')
+        words = segmentor.segment(text)
     except Exception as e:
-        if e.reason=='EMPTY SENTENCE':
-            print 'EMPTY SENTENCE'
-            return []
-        else:
-            print '========Error when parse text========'
-            print '========Error:========'
-            print e
-            print [text]
-            print '========End========'
-            return None
+        print [text]
+        print e
+        return None
+    return [word for word in words]
+    #base_url = "http://127.0.0.1:12345/ltp"
+    #data = {
+    #        's': text.encode('utf8'),
+    #        'x': 'n',
+    #        'c': 'utf-8',
+    #        't': 'ws'}
+
+    #request = urllib2.Request(base_url)
+    #params = urllib.urlencode(data)
+    #try:
+    #    result=[]
+    #    response = urllib2.urlopen(request, params)
+    #    content = response.read().strip()
+    #    tree=etree.XML(content)
+    #    nodes=tree.xpath('//word')
+    #    for node in nodes:
+    #        result.append(node.get('cont'))
+    #    return result
+    #except etree.XMLSyntaxError:
+    #    print 'XMLSyntaxError'
+    #    return None
+    #except Exception as e:
+    #    if e.reason=='EMPTY SENTENCE':
+    #        print 'EMPTY SENTENCE'
+    #        return []
+    #    else:
+    #        print '========Error when parse text========'
+    #        print '========Error:========'
+    #        print e
+    #        print [text]
+    #        print '========End========'
+    #        return None
 
 def get_href_from_text(text, html):
     pat='<a[^<,>]*>'+text+'<'
@@ -403,12 +419,14 @@ def get_htmls_by_domid(html, domid):
         print 'No dict'
         return None
 
-if __name__=='__main__':
-    #print get_average_statuses_count()
-    #check()
-    #output_all_uids()
-    #print load_headers()
-    #clean_database()
+def insert_avatar_url():
+    from pymongo import Connection
+    con = Connection()
+    db = con.user_image
+    users=db.users
+    for user in users.find():
+        uid=w
+def parse_all():
     from pymongo import Connection
     con = Connection()
     db = con.user_image
@@ -421,10 +439,10 @@ if __name__=='__main__':
     except re.error:
         # UCS-2
         highpoints = re.compile(u'([\u2600-\u27BF])|([\uD83C][\uDF00-\uDFFF])|([\uD83D][\uDC00-\uDE4F])|([\uD83D][\uDE80-\uDEFF])')
-    #for user in users.find({'parsed':False}).limit(10):
-    for user in users.find().limit(10):
-        if user['parsed']:
-            continue
+    for user in users.find({'parsed':False}):#.limit(10):
+    #for user in users.find().limit(10):
+        #if user['parsed']:
+        #    continue
         statuses=user['statuses']
         success=True
         for i in xrange(len(statuses)):
@@ -435,9 +453,12 @@ if __name__=='__main__':
                 success=False
                 print emojs
                 print [statuses[i]['text']]
-                continue
+                break
             statuses[i]['text']=parsed_text
             statuses[i]['emoticons']+=emojs
         if success:
             print user['information']['uid']
             users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
+
+if __name__=='__main__':
+    parse_all()
