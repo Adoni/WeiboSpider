@@ -420,12 +420,24 @@ def get_htmls_by_domid(html, domid):
         return None
 
 def insert_avatar_url():
+    import requests
     from pymongo import Connection
     con = Connection()
     db = con.user_image
     users=db.users
-    for user in users.find():
-        uid=w
+    for user in users.find({'got_avatar_large':None}):
+        uid=user['information']['uid']
+        access_token = '2.00_BHNxDlxpd6C2fab6e6e09i5M5DE'
+        url='https://api.weibo.com/2/users/show.json'
+        params={
+            'access_token':access_token,
+            'uid':str(uid)
+        }
+        html=requests.get(url=url,params=params)
+        information=html.json()
+        user['information']['avatar_large']=information['avatar_large']
+        users.update({'_id':user['_id']}, {'$set':{'information':user['information'], 'got_avatar_large':True}})
+        print user['_id']
 def parse_all():
     from pymongo import Connection
     con = Connection()
@@ -461,4 +473,5 @@ def parse_all():
             users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
 
 if __name__=='__main__':
-    parse_all()
+    #parse_all()
+    insert_avatar_url()
