@@ -9,6 +9,9 @@ import json
 import urllib
 import urllib2
 from pyltp import Segmentor
+import requests
+import urllib
+import json
 
 global segmentor
 segmentor = Segmentor()
@@ -229,13 +232,25 @@ def get_target(html):
 
 def get_average_statuses_count():
     from pymongo import Connection
+    from progressbar import ProgressBar
+    from progressive.bar import Bar
     con = Connection()
     db = con.user_image
-    users=db.user_age
+    users=db.users
     l=0.0
+    total_count=users.count()
+    finish_count=0
+    bar = Bar(max_value=total_count, fallback=True)
+    bar.cursor.clear_lines(2)
+    bar.cursor.save()
     for user in users.find():
+        if len(user['statuses'])<100:
+            continue
         l+=len(user['statuses'])
-    l/=users.find().count()
+        finish_count+=1
+        bar.cursor.restore()
+        bar.draw(value=finish_count)
+    l/=finish_count
     return l
 
 def clean_database():
@@ -419,12 +434,41 @@ def get_htmls_by_domid(html, domid):
         print 'No dict'
         return None
 
+def get_image_description(image_url):
+    url='http://stu.baidu.com/n/searchpc'
+    objurl=urllib.quote_plus(image_url)
+    objurl=image_url
+    data={
+        'queryImageUrl':objurl,
+    }
+    r=requests.get(url=url,params=data)
+    #r=requests.get('http://stu.baidu.com/n/searchpc?queryImageUrl=http%3A%2F%2Ftp4.sinaimg.cn%2F5103578591%2F180%2F22871946288%2F1')
+    pattern = re.compile(r'keywords:\'.*\'')
+    d=pattern.findall(r.text.encode('utf8'))
+    descriptions=d[0][12:-3].split('},{')
+    keys=[]
+    for d in descriptions:
+        #print d
+        pattern=re.compile(r'keyword\\x22:\\x22[^,]*')
+        c=compile('key=u"'+pattern.findall(d)[0][16:-4].replace('\\\\','\\')+'"','','exec')
+        exec c
+        keys.append(key)
+    return keys
+
 def insert_avatar_url():
     import requests
     from pymongo import Connection
+    from progressbar import ProgressBar
+    from progressive.bar import Bar
+    pbar = ProgressBar(maxval=100)
     con = Connection()
     db = con.user_image
     users=db.users
+    total_count=users.find({'got_avatar_large':None}).count()
+    finish_count=0
+    bar = Bar(max_value=total_count, fallback=True)
+    bar.cursor.clear_lines(2)
+    bar.cursor.save()
     for user in users.find({'got_avatar_large':None}):
         uid=user['information']['uid']
         access_token = '2.00_BHNxDlxpd6C2fab6e6e09i5M5DE'
@@ -433,17 +477,49 @@ def insert_avatar_url():
             'access_token':access_token,
             'uid':str(uid)
         }
-        html=requests.get(url=url,params=params)
-        information=html.json()
-        user['information']['avatar_large']=information['avatar_large']
-        users.update({'_id':user['_id']}, {'$set':{'information':user['information'], 'got_avatar_large':True}})
-        print user['_id']
-def parse_all():
+        try:
+            html=requests.get(url=url,params=params,timeout=5)
+            information=html.json()
+            user['information']['avatar_large']=information['avatar_large']
+            users.update({'_id':user['_id']}, {'$set':{'information':user['information'], 'got_avatar_large':True}})
+            finish_count+=1
+        except:
+            continue
+        bar.cursor.restore()
+        bar.draw(value=finish_count)
+
+def insert_image_descriptions():
+    import requests
     from pymongo import Connection
+    from progressbar import ProgressBar
+    from progressive.bar import Bar
+    pbar = ProgressBar(maxval=100)
     con = Connection()
     db = con.user_image
     users=db.users
-    print users.count()
+    total_count=users.find({'got_avatar_large':True, 'got_image_descriptions':None}).count()
+    finish_count=0
+    bar = Bar(max_value=total_count, fallback=True)
+    bar.cursor.clear_lines(2)
+    bar.cursor.save()
+    for user in users.find({'got_avatar_large':True}):
+        image_url=user['information']['avatar_large']
+        try:
+            descriptions=get_image_description(image_url)
+            user['information']['descriptions']=descriptions
+            users.update({'_id':user['_id']}, {'$set':{'information':user['information'], 'got_image_descriptions':True}})
+            finish_count+=1
+        except:
+            continue
+        bar.cursor.restore()
+        bar.draw(value=finish_count)
+def parse_all():
+    from pymongo import Connection
+    from progressbar import ProgressBar
+    from progressive.bar import Bar
+    con = Connection()
+    db = con.user_image
+    users=db.users
     try:
         # UCS-4
         highpoints = re.compile(u'([\U00002600-\U000027BF])|([\U0001f300-\U0001f64F])|([\U0001f680-\U0001f6FF])')
@@ -451,10 +527,12 @@ def parse_all():
     except re.error:
         # UCS-2
         highpoints = re.compile(u'([\u2600-\u27BF])|([\uD83C][\uDF00-\uDFFF])|([\uD83D][\uDC00-\uDE4F])|([\uD83D][\uDE80-\uDEFF])')
+    total_count=users.find({'parsed':False}).count()
+    finish_count=0
+    bar = Bar(max_value=total_count, fallback=True)
+    bar.cursor.clear_lines(2)
+    bar.cursor.save()
     for user in users.find({'parsed':False}):#.limit(10):
-    #for user in users.find().limit(10):
-        #if user['parsed']:
-        #    continue
         statuses=user['statuses']
         success=True
         for i in xrange(len(statuses)):
@@ -469,9 +547,13 @@ def parse_all():
             statuses[i]['text']=parsed_text
             statuses[i]['emoticons']+=emojs
         if success:
-            print user['information']['uid']
+            finish_count+=1
             users.update({'_id':user['_id']}, {'$set':{'statuses':statuses, 'parsed':True}})
+            bar.cursor.restore()
+            bar.draw(value=finish_count)
 
 if __name__=='__main__':
-    #parse_all()
-    insert_avatar_url()
+    parse_all()
+    #insert_avatar_url()
+    #insert_image_descriptions()
+    #print get_average_statuses_count()
