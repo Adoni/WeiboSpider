@@ -506,13 +506,19 @@ def insert_image_descriptions():
         image_url=user['information']['avatar_large']
         try:
             descriptions=get_image_description(image_url)
-            user['information']['descriptions']=descriptions
+            user['information']['descriptions']=[]
+            for d in descriptions:
+                dd=parse_text(d)
+                if dd==None:
+                    dd=[d]
+                user['information']['descriptions'].append(dd)
             users.update({'_id':user['_id']}, {'$set':{'information':user['information'], 'got_image_descriptions':True}})
             finish_count+=1
         except:
             continue
         bar.cursor.restore()
         bar.draw(value=finish_count)
+
 def parse_all():
     from pymongo import Connection
     from progressbar import ProgressBar
@@ -552,8 +558,36 @@ def parse_all():
             bar.cursor.restore()
             bar.draw(value=finish_count)
 
+def parse_image_descriptions():
+    from pymongo import Connection
+    from progressive.bar import Bar
+    con = Connection()
+    db = con.user_image
+    users=db.users
+    total_count=users.find({'got_image_descriptions':True}).count()
+    finish_count=0
+    bar = Bar(max_value=total_count, fallback=True)
+    bar.cursor.clear_lines(2)
+    bar.cursor.save()
+    for user in users.find({'got_image_descriptions':True}):
+        finish_count+=1
+        bar.cursor.restore()
+        bar.draw(value=finish_count)
+        try:
+            descriptions=[]
+            for d in user['information']['descriptions']:
+                dd=parse_text(d)
+                if dd==None:
+                    dd=[d]
+                descriptions.append(dd)
+            user['information']['descriptions']=descriptions
+            users.update({'_id':user['_id']}, {'$set':{'information':user['information'], 'got_image_descriptions':True}})
+        except Exception as e:
+            continue
+
 if __name__=='__main__':
-    parse_all()
+    parse_image_descriptions()
+    #parse_all()
     #insert_avatar_url()
     #insert_image_descriptions()
     #print get_average_statuses_count()
