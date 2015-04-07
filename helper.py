@@ -9,13 +9,18 @@ import json
 import urllib
 import urllib2
 from pyltp import Segmentor
+from pyltp import Postagger
 import requests
 import urllib
 import json
+import os
 
 global segmentor
+MODELDIR='./ltp_model/'
 segmentor = Segmentor()
 segmentor.load("./ltp_model/cws.model")
+postagger = Postagger()
+postagger.load(os.path.join(MODELDIR, "pos.model"))
 
 def get_statuses(html):
 
@@ -109,38 +114,18 @@ def parse_text(text):
         print e
         return None
     return [word for word in words]
-    #base_url = "http://127.0.0.1:12345/ltp"
-    #data = {
-    #        's': text.encode('utf8'),
-    #        'x': 'n',
-    #        'c': 'utf-8',
-    #        't': 'ws'}
-
-    #request = urllib2.Request(base_url)
-    #params = urllib.urlencode(data)
-    #try:
-    #    result=[]
-    #    response = urllib2.urlopen(request, params)
-    #    content = response.read().strip()
-    #    tree=etree.XML(content)
-    #    nodes=tree.xpath('//word')
-    #    for node in nodes:
-    #        result.append(node.get('cont'))
-    #    return result
-    #except etree.XMLSyntaxError:
-    #    print 'XMLSyntaxError'
-    #    return None
-    #except Exception as e:
-    #    if e.reason=='EMPTY SENTENCE':
-    #        print 'EMPTY SENTENCE'
-    #        return []
-    #    else:
-    #        print '========Error when parse text========'
-    #        print '========Error:========'
-    #        print e
-    #        print [text]
-    #        print '========End========'
-    #        return None
+def postagger_text(text):
+    try:
+        text=text.encode('utf8')
+        words= segmentor.segment(text)
+        print words
+        words = postagger.postag(words)
+        print words
+    except Exception as e:
+        print [text]
+        print e
+        return None
+    return [word for word in words]
 
 def get_href_from_text(text, html):
     pat='<a[^<,>]*>'+text+'<'
@@ -159,49 +144,23 @@ def get_href_from_text(text, html):
     return ans
 
 def is_not_name(name):
-    bad_words=[
-            u'团委',
-            u'党委',
-            u'公安',
-            u'交警',
-            u'消防',
-            u'官网',
-            u'外卖',
-            u'官方',
-            u'订餐',
-            u'基金',
-            u'团购',
-            u'大学',
-            u'资讯',
-            u'新闻',
-            u'後援會',
-            u'海洋馆',
-            u'报',
-            u'礼服',
-            u'平台',
-            u'咨询',
-            u'杂志',
-            u'粉丝',
-            u'论坛',
-            u'联盟',
-            u'公司',
-            u'讲坛',
-            u'旅行社',
-            u'出版社',
-            u'电视台',
-            u'公共',
-            u'微博',
-            u'24小时服务',
-            u'馆',
-            u'同城会',
-            u'老乡会',
-            u'校友会',
-            u'网',
-            u'店']
+    bad_words=[word.replace('\n','').decode('utf8') for word in open('./bad_word.bin')]
     for w in bad_words:
-        if(w in name):
+        if w in name :
             return True
     return False
+
+def clean_users():
+    from pymongo import Connection
+    user_image=Connection().user_image
+    users=user_image.users
+    corpse_users=user_image.corpse_users
+    print corpse_users.count()
+    for user in users.find():
+        if is_not_name(user['information']['screen_name']):
+            print user['information']['screen_name']
+            corpse_users.insert(user)
+            users.remove({'_id':user['_id']})
 
 def sleep(sleep_time):
     sleep_time=sleep_time+random.randint(-2,2)
@@ -326,7 +285,6 @@ def get_htmls_by_domid(html, domid):
     except:
         results=re.findall(pat, html)
     if(results==[]):
-        print 'No html'
         return None
     try:
         htmls=[]
@@ -419,7 +377,6 @@ def get_htmls_by_domid(html, domid):
     except:
         results=re.findall(pat, html)
     if(results==[]):
-        print 'No html'
         return None
     try:
         htmls=[]
@@ -441,14 +398,20 @@ def get_image_description(image_url):
     data={
         'queryImageUrl':objurl,
     }
-    r=requests.get(url=url,params=data)
+    try:
+        r=requests.get(url=url,params=data,timeout=20)
+    except:
+        return None
     #r=requests.get('http://stu.baidu.com/n/searchpc?queryImageUrl=http%3A%2F%2Ftp4.sinaimg.cn%2F5103578591%2F180%2F22871946288%2F1')
     pattern = re.compile(r'keywords:\'.*\'')
     d=pattern.findall(r.text.encode('utf8'))
+    if len(d)<1:
+        return []
     descriptions=d[0][12:-3].split('},{')
     keys=[]
     for d in descriptions:
-        #print d
+        if u'keyword' not in d:
+            continue
         pattern=re.compile(r'keyword\\x22:\\x22[^,]*')
         c=compile('key=u"'+pattern.findall(d)[0][16:-4].replace('\\\\','\\')+'"','','exec')
         exec c
@@ -502,10 +465,15 @@ def insert_image_descriptions():
     bar = Bar(max_value=total_count, fallback=True)
     bar.cursor.clear_lines(2)
     bar.cursor.save()
-    for user in users.find({'got_avatar_large':True}):
+    for user in users.find({'got_avatar_large':True, 'got_image_descriptions':None}):
         image_url=user['information']['avatar_large']
         try:
             descriptions=get_image_description(image_url)
+            if descriptions==None:
+                continue
+            if descriptions==[]:
+                users.update({'_id':user['_id']}, {'$set':{'information':user['information'],'got_image_descriptions':False}})
+            print user['information']['gender']+' '+'|'.join(descriptions)
             user['information']['descriptions']=[]
             for d in descriptions:
                 dd=parse_text(d)
@@ -514,10 +482,12 @@ def insert_image_descriptions():
                 user['information']['descriptions'].append(dd)
             users.update({'_id':user['_id']}, {'$set':{'information':user['information'], 'got_image_descriptions':True}})
             finish_count+=1
-        except:
+        except Exception as e:
+            raise
+            print e
             continue
-        bar.cursor.restore()
-        bar.draw(value=finish_count)
+        #bar.cursor.restore()
+        #bar.draw(value=finish_count)
 
 def parse_all():
     from pymongo import Connection
@@ -575,6 +545,8 @@ def parse_image_descriptions():
         bar.draw(value=finish_count)
         try:
             descriptions=[]
+            if type(user['information']['descriptions']) is list:
+                continue
             for d in user['information']['descriptions']:
                 dd=parse_text(d)
                 if dd==None:
@@ -586,8 +558,12 @@ def parse_image_descriptions():
             continue
 
 if __name__=='__main__':
-    parse_image_descriptions()
+    print '========Helper========'
+    #clean_users()
+    #parse_image_descriptions()
     #parse_all()
     #insert_avatar_url()
     #insert_image_descriptions()
     #print get_average_statuses_count()
+    #print parse_text(u'呼伦贝尔大草原')
+    print postagger_text(u'呼伦贝尔大草原')

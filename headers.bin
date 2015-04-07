@@ -14,12 +14,13 @@ Cache-Control:max-age=0
 Connection:keep-alive
 User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36
 END
-BEGIN Birthday
+BEGIN Homepage
 Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
-Accept-Language:zh-CN,zh;q=0.8,en;q=0.6
 Accept-Encoding:gzip, deflate, sdch
-Cache-Control:max-age=0
+Accept-Language:zh-CN,zh;q=0.8,en;q=0.6
 Connection:keep-alive
+SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhWDXeNEehUidkXekqaL9uc5JpX5KMt; SUHB=00x5EXIOrhOFvf; ALF=1458802513; SSOLoginState=1427266517; YF-V5-G0=217e7be0da59eb4365c47fb554b4ba9c; _s_tentry=login.sina.com.cn; Apache=6665025292895.734.1427266528240; ULV=1427266528309:8:7:1:6665025292895.734.1427266528240:1426920295795; UOR=developer.51cto.com,widget.weibo.com,login.sina.com.cn; YF-Page-G0=9a31b867b34a0b4839fa27a4ab6ec79f; WBtopGlobal_register_version=56b492c83030fda6
+SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WhWDXeNEehUidkXekqaL9uc5JpX5KMt; SUHB=00x5EXIOrhOFvf; ALF=1458802513; SSOLoginState=1427266517; YF-V5-G0=217e7be0da59eb4365c47fb554b4ba9c; _s_tentry=login.sina.com.cn; Apache=6665025292895.734.1427266528240; ULV=1427266528309:8:7:1:6665025292895.734.1427266528240:1426920295795; UOR=developer.51cto.com,widget.weibo.com,login.sina.com.cn; YF-Page-G0=9a31b867b34a0b4839fa27a4ab6ec79f; WBtopGlobal_register_version=56b492c83030fda6
 Host:weibo.com
-User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36
+User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36
 END

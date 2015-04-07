@@ -44,8 +44,8 @@ def get_html(body):
         html=session.get(url=body['url'], params=body['params'], timeout=20)
     except requests.exceptions.ConnectionError:
         #print '================\nConnectionError\n===================='
-        #raise Exception('==============\nConnectionError\n===============')
-        return ''
+        raise Exception('ConnectionError')
+        #return ''
     except requests.exceptions.Timeout:
         #print('Sleeping...')
         #print(body)
@@ -57,9 +57,10 @@ def get_html(body):
             #print 'get url error'
             #print e
             return ''
-    except:
-        return ''
-        #raise Exception('Other reasons to stop')
+    except Exception as e:
+        #return ''
+        raise
+        #raise Exception('Other reasons to stop: '+e)
 
     if('location.replace' in html.text):
         #print('Redirect..')
@@ -67,7 +68,8 @@ def get_html(body):
         target=get_target(html.text)
         if(target==None):
             #print 'get target error'
-            return ''
+            raise Exception('Cannot find redirect target')
+            #return ''
         else:
             #print('Got target')
             #print('Retry to get html')
@@ -92,8 +94,9 @@ def get_html(body):
                 except:
                     #print('Error!!!!!')
                     #print 'refresh cookie error'
-                    exit(0)
-                    return ''
+                    #exit(0)
+                    #return ''
+                    raise Exception('Cannot find redirect target')
     return html
 
 #定义接收到消息的处理方法
@@ -125,7 +128,7 @@ if __name__ == '__main__':
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='localhost'))
     channel = connection.channel()
-    sleep_time=40
+    sleep_time=50
     #定义队列
     channel.queue_declare(queue=settings.QUEUE_NAME)
     channel.basic_qos(prefetch_count=1)

@@ -22,8 +22,6 @@ class WeiboSpider():
     allowed_domains=['weibo.com',]
     access_token = '2.00_BHNxDlxpd6C2fab6e6e09i5M5DE'
     ltp_token='j323H4kIWzQkRwGxiGNUtGhO7f6tGBQNvqWqSW3K'
-    #sleep time before try again
-    sleep_time=50
 
     #The headers to imitate the brower
     all_headers=load_headers()
@@ -35,11 +33,10 @@ class WeiboSpider():
         #Connect with mongodb
         self.con=Connection()
         self.db = self.con.user_image
-        #self.users_collection=self.db.user_age
         self.users_collection=self.db.users
         self.corpse_users=self.db.corpse_users
 
-    def get_html(self, url, headers=None, need_sleep=True, params=None):
+    def get_html(self, url, headers=None, need_sleep=True, params=[]):
         body={'url':url, 'headers':headers, 'need_sleep':True, 'params':params}
         return self.deliver.request(body)
 
@@ -54,15 +51,12 @@ class WeiboSpider():
 
     def get_user_statuses(self, uid, user_name=None):
         base_url='https://api.weibo.com/2/statuses/timeline_batch.json?'
-        #statuses是要返回的数据
         statuses=[]
         page=1
         while 1:
             if len(statuses)>1000:
                 break
             print 'Try to get %d pages, and now we got %d statuses'%(page,len(statuses))
-            #获取基础的网页
-            #url='http://www.weibo.com/%s?is_search=0&visible=0&is_ori=1&is_tag=0&profile_ftype=1&page=%d#feedtop'%(uid,page)
             url='http://www.weibo.com/%s'%uid
             params={
                 'is_search':0,
@@ -86,7 +80,6 @@ class WeiboSpider():
                 break
             statuses+=tmp_statuses
             for pagebar in range(0,2):
-                #url='http://www.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=100505&profile_ftype=1&is_ori=1&pre_page=%d&page=%d&pagebar=%d&id=100505%s'%(page, page, pagebar, uid)
                 url='http://www.weibo.com/p/aj/v6/mblog/mbloglist'
                 params={
                     'ajwvr':6,
@@ -105,7 +98,6 @@ class WeiboSpider():
                     print '========Error when try to load as json========='
                     print '========Error:========'
                     print e
-                    #open(str(uid)+'.loadjson','w').write(html)
                     print '========End========'
                     continue
                 try:
@@ -114,7 +106,6 @@ class WeiboSpider():
                     print '========Error when try to get html from json data========='
                     print '========Error:========'
                     print e
-                    #open(str(uid)+'.gethtmlfromjsondata','w').write(str(json_data))
                     print '========End========'
                     continue
                 tmp_statuses=get_statuses(html)
@@ -141,16 +132,25 @@ class WeiboSpider():
             return all_uids[0:count]
 
     def get_user_birthday(self,uid):
-        #complete_url='http://weibo.com/p/100505%s/info?mod=pedit_more'%uid
-        complete_url='http://weibo.com/masu?from=feed&loc=at&nick=马苏'
-        #complete_url='http://weibo.com/p/1005051738932247/info'
-        html=self.get_html(complete_url, self.all_headers['Birthday'])
-        open('./hehe.html','w').write(html)
-        return
-        html=get_htmls_by_domid(html,'Pl_Official_MyProfileFeed__')
+        complete_url='http://weibo.com/u/'+str(uid)
+        html=self.get_html(complete_url, self.all_headers['Homepage'])
         if not html:
+            print 'get html error'
+            return None
+        html=get_htmls_by_domid(html.text,'Pl_Core_UserInfo__')
+        if not html:
+            print complete_url
+            print 'get div error'
             return None
         html=normal(html[0])
+        pattern=re.compile(u'\d{4}年\d{1,2}月\d{1,2}日')
+        result=pattern.findall(html)
+        if len(result)==1:
+            birthday=result[0].replace(u'年','-').replace(u'月','-').replace(u'日','')
+            return birthday
+        else:
+            print 'no birthday'
+            return None
 
     def get_user_information(self, uid):
         url='https://api.weibo.com/2/users/show.json'
@@ -238,6 +238,28 @@ class WeiboSpider():
                 print '========End========'
                 self.users_collection.insert(user_data)
 
+    def insert_birthday(self):
+        from progressive.bar import Bar
+        total_count=self.users_collection.find({'have_birthday':None}).count()
+        finish_count=0
+        bar = Bar(max_value=total_count, fallback=True)
+        bar.cursor.clear_lines(2)
+        bar.cursor.save()
+        for user in self.users_collection.find({'have_birthday':None}):
+            birthday=self.get_user_birthday(user['information']['uid'])
+            continue
+            if birthday is None:
+                self.users_collection.update({'_id':user['_id']}, {'$set':{'have_birthday':False}})
+            else:
+                user['information']['birthday']=birthday
+                self.users_collection.update({'_id':user['_id']}, {'$set':{'information':user['information'],'have_birthday':True}})
+            finish_count+=1
+            #bar.cursor.restore()
+            #bar.draw(value=finish_count)
+
 if __name__=='__main__':
     spider=WeiboSpider()
-    spider.start_requests()
+    #spider.start_requests()
+    #print spider.get_user_birthday('1448482450')
+    print spider.get_html('http://weibo.com/u/1883388073').text
+    #spider.insert_birthday()

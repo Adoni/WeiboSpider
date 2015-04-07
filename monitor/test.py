@@ -49,13 +49,14 @@ def get_html(url):
             print('Retry to get html')
             url=target[0]
             try:
-                html=session.get(url)
+                html=session.get(url,timeout=10)
                 print('Got html')
                 print('Saveing cookie')
-                cookieJar.save(ignore_discard=True)
+                #cookieJar.save(ignore_discard=True)
                 print('Save cookie')
-            except:
+            except Exception as e:
                 print('Error!!!!!')
+                print e
                 print 'refresh cookie error'
                 return ''
     return html
@@ -63,6 +64,5 @@ def get_html(url):
 if __name__ == '__main__':
     cookie_file_name='./cookies/cookie_'+'12'#str(sys.argv[1])
     install_cookie(cookie_file_name)
-    url='http://weibo.com/p/1006051235576307/info?mod=pedit_more'
-    url='http://weibo.com/hangeng'
+    url='http://weibo.com/u/1883388073'
     print get_html(url).text
