@@ -32,7 +32,8 @@ class WeiboSpider():
         self.deliver=Deliver()
         #Connect with mongodb
         self.con=Connection()
-        self.db = self.con.user_image
+        #self.db = self.con.user_image
+        self.db = self.con.users_for_liyang
         self.users_collection=self.db.users
         self.corpse_users=self.db.corpse_users
 
@@ -259,7 +260,7 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    #spider.start_requests()
+    spider.start_requests()
     #print spider.get_user_birthday('1448482450')
-    print spider.get_html('http://weibo.com/u/1883388073').text
+    #print spider.get_html('http://weibo.com/u/1883388073').text
     #spider.insert_birthday()

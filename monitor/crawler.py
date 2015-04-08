@@ -23,7 +23,7 @@ def install_cookie(cookie_file_name):
     global cookieJar
     global session
     cookieJar = cookielib.LWPCookieJar(cookie_file_name)
-    cookieJar.load( ignore_discard=True, ignore_expires=True)
+    cookieJar.load(ignore_discard=True, ignore_expires=True)
     #opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar));
     #urllib2.install_opener(opener);
     #use global session to save and reload cookies
@@ -43,59 +43,33 @@ def get_html(body):
         body=update_time(body)
         html=session.get(url=body['url'], params=body['params'], timeout=20)
     except requests.exceptions.ConnectionError:
-        #print '================\nConnectionError\n===================='
         raise Exception('ConnectionError')
-        #return ''
     except requests.exceptions.Timeout:
-        #print('Sleeping...')
-        #print(body)
-        #sleep(sleep_time)
         try:
             body=update_time(body)
             html=session.get(url=body['url'], params=body['params'], timeout=20)
         except Exception as e:
-            #print 'get url error'
-            #print e
             return ''
     except Exception as e:
-        #return ''
         raise
-        #raise Exception('Other reasons to stop: '+e)
 
     if('location.replace' in html.text):
-        #print('Redirect..')
-        #print('Try to get target')
         target=get_target(html.text)
         if(target==None):
-            #print 'get target error'
             raise Exception('Cannot find redirect target')
-            #return ''
         else:
-            #print('Got target')
-            #print('Retry to get html')
             body['url']=target[0]
             try:
                 body=update_time(body)
                 html=session.get(url=body['url'], params=body['params'], timeout=20)
-                #print('Got html')
-                #print('Saveing cookie')
                 cookieJar.save(ignore_discard=True)
-                #print('Save cookie')
             except:
-                #print 'Sleeping'
                 sleep(sleep_time)
                 try:
                     body=update_time(body)
                     html=session.get(url=body['url'], params=body['params'], timeout=20)
-                    #print('Got html')
-                    #print('Saveing cookie')
                     cookieJar.save(ignore_discard=True)
-                    #print('Save cookie')
                 except:
-                    #print('Error!!!!!')
-                    #print 'refresh cookie error'
-                    #exit(0)
-                    #return ''
                     raise Exception('Cannot find redirect target')
     return html
 
