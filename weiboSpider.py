@@ -51,14 +51,13 @@ class WeiboSpider():
         return text, emoticons
 
     def get_user_statuses(self, uid, user_name=None):
-        base_url='https://api.weibo.com/2/statuses/timeline_batch.json?'
         statuses=[]
         page=1
         while 1:
             if len(statuses)>1000:
                 break
             print 'Try to get %d pages, and now we got %d statuses'%(page,len(statuses))
-            url='http://www.weibo.com/%s'%uid
+            url='http://www.weibo.com/u/%s'%uid
             params={
                 'is_search':0,
                 'visible':0,
@@ -69,10 +68,13 @@ class WeiboSpider():
             }
             html=self.get_html(url=url, headers=self.all_headers['UserStatus'], params=params)
             if html=='':
+                print 'Html is empty'
                 print url
                 break
+            open('./hehe.html','w').write(html.text.encode('utf8'))
             html=get_htmls_by_domid(html.text,'Pl_Official_MyProfileFeed__')
             if not html:
+                print 'Html is None'
                 print url
                 break
             html=normal(html[0])
@@ -116,8 +118,8 @@ class WeiboSpider():
             page+=1
         return statuses
 
-    def get_uids(self, count=-1):
-        all_uids=cPickle.load(open('./uids.bin','rb'))
+    def get_uids(self, count=-1, uid_file='./uids.bin'):
+        all_uids=cPickle.load(open(uid_file,'rb'))
         all_existed_users=self.users_collection.find({},{'information':1})
         for existed_user in all_existed_users:
             if existed_user['information']['uid'] in all_uids:
@@ -163,7 +165,7 @@ class WeiboSpider():
         if(html=='' or 'error' in html):
             print('========Html is empty or error in html========')
             print '=======End========'
-            print html
+            #print html
             print '=======Complete url========'
             print(url)
             print '=======End========'
@@ -199,14 +201,14 @@ class WeiboSpider():
         return information
 
     def get_user_data(self, uid):
-        information=self.get_user_information(uid)
-        if information==None:
-            return None
+        #information=self.get_user_information(uid)
+        #if information==None:
+        #    return None
         statuses=self.get_user_statuses(uid)
         if statuses==[] or statuses==None:
             return None
         user_data=dict()
-        user_data['information']=information
+        #user_data['information']=information
         user_data['statuses']=statuses
         user_data['parsed']=False
         user_data['type']='new'
@@ -217,7 +219,8 @@ class WeiboSpider():
         return user_data
 
     def start_requests(self):
-        uids=self.get_uids()
+        uid_file='/Users/sunxiaofei/workspace/ir_project/for_liyang/uids_for_liyang.bin'
+        uids=self.get_uids(uid_file=uid_file)
         print '========The count of uids to crawl:========'
         print len(uids)
         print '========End========'
@@ -229,15 +232,16 @@ class WeiboSpider():
             if user_data==None:
                 print '========User data is None========'
                 continue
-            if is_not_name(user_data['information']['screen_name']):
-                print '========The name is illgal========'
-                self.corpse_users.insert(user_data)
-                print '========End========'
-            else:
-                print '========The name is leagal========'
-                print 'leagal'
-                print '========End========'
-                self.users_collection.insert(user_data)
+            #if is_not_name(user_data['information']['screen_name']):
+            #   print '========The name is illgal========'
+            #    self.corpse_users.insert(user_data)
+            #    print '========End========'
+            #else:
+            #    print '========The name is leagal========'
+            #    print 'leagal'
+            #    print '========End========'
+            #    self.users_collection.insert(user_data)
+            self.users_collection.insert(user_data)
 
     def insert_birthday(self):
         from progressive.bar import Bar
@@ -260,7 +264,10 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    spider.start_requests()
+    #print spider.get_user_statuses('1831202675')
+    #spider.start_requests()
     #print spider.get_user_birthday('1448482450')
-    #print spider.get_html('http://weibo.com/u/1883388073').text
+    h=spider.get_html('http://weibo.com/u/1883388073',headers=spider.all_headers['UserStatus'])
+    open('./hehe.html','w').write(h.text.encode('utf8'))
+    print(h.url)
     #spider.insert_birthday()

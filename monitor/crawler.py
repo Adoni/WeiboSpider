@@ -19,17 +19,19 @@ global sleep_time
 global headers
 global session
 
+global debug
+debug=True
+
+def myprint(information):
+    if debug:
+        print information
+
 def install_cookie(cookie_file_name):
     global cookieJar
     global session
-    cookieJar = cookielib.LWPCookieJar(cookie_file_name)
-    cookieJar.load(ignore_discard=True, ignore_expires=True)
-    #opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookieJar));
-    #urllib2.install_opener(opener);
-    #use global session to save and reload cookies
+    cookies=requests.utils.cookiejar_from_dict(cPickle.load(open(cookie_file_name,'rb')))
     session=requests.Session()
-    session.cookies=cookieJar
-    #print('Install Cookie Done')
+    #session.cookies=cookies
 
 def update_time(body):
     if 'timestamp' in body['params']:
@@ -41,36 +43,46 @@ def get_html(body):
     global session
     try:
         body=update_time(body)
-        html=session.get(url=body['url'], params=body['params'], timeout=20)
+        html=session.get(url=body['url'], headers=body['headers'], params=body['params'], timeout=20)
     except requests.exceptions.ConnectionError:
         raise Exception('ConnectionError')
     except requests.exceptions.Timeout:
         try:
             body=update_time(body)
-            html=session.get(url=body['url'], params=body['params'], timeout=20)
+            html=session.get(url=body['url'], headers=body['headers'], params=body['params'], timeout=20)
         except Exception as e:
+            print e
             return ''
     except Exception as e:
         raise
 
-    if('location.replace' in html.text):
+    if 'location.replace' in html.text:
         target=get_target(html.text)
         if(target==None):
             raise Exception('Cannot find redirect target')
         else:
             body['url']=target[0]
+            myprint(target[0])
             try:
                 body=update_time(body)
-                html=session.get(url=body['url'], params=body['params'], timeout=20)
-                cookieJar.save(ignore_discard=True)
+                html=session.get(url=body['url'], headers=body['headers'], params=body['params'], timeout=20)
+                print html.text
+                print html.url
+                cookies=requests.utils.dict_from_cookiejar(session.cookies)
+                #cPickle.dump(cookies,open('./cookies/cookie_'+str(sys.argv[1]),'wb'))
             except:
                 sleep(sleep_time)
                 try:
                     body=update_time(body)
-                    html=session.get(url=body['url'], params=body['params'], timeout=20)
-                    cookieJar.save(ignore_discard=True)
-                except:
+                    html=session.get(url=body['url'], headers=body['headers'],params=body['params'], timeout=20)
+                    print html.url
+                    cookies=requests.utils.dict_from_cookiejar(session.cookies)
+                    #cPickle.dump(cookies,open('./cookies/cookie_'+str(sys.argv[1]),'wb'))
+                except Exception as e:
+                    myprint(e)
                     raise Exception('Cannot find redirect target')
+    #if '<title>Sina Visitor System</title>' in html.text:
+    #    raise(Exception('Cookie is past due'))
     return html
 
 #定义接收到消息的处理方法
@@ -91,10 +103,11 @@ def on_request(ch, method, props, body):
     if body['need_sleep']:
         sleep(sleep_time)
     ch.basic_ack(delivery_tag = method.delivery_tag)
-    #print '=========Complete Crawl========='
+    myprint('=========Complete Crawl=========')
 
 
-if __name__ == '__main__':
+def main():
+    global sleep_time
     #载入cookie
     cookie_file_name='./cookies/cookie_'+str(sys.argv[1])
     install_cookie(cookie_file_name)
@@ -109,3 +122,6 @@ if __name__ == '__main__':
     channel.basic_consume(on_request, queue=settings.QUEUE_NAME)
 
     channel.start_consuming()
+
+if __name__ == '__main__':
+    main()
