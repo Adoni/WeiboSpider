@@ -367,7 +367,7 @@ def load_headers():
             headers={}
             continue
         l=l.split(':')
-        headers[l[0]]=l[1]
+        headers[l[0]]=':'.join(l[1:])
     return headers_list
 
 def get_htmls_by_domid(html, domid):
@@ -566,4 +566,6 @@ if __name__=='__main__':
     #insert_image_descriptions()
     #print get_average_statuses_count()
     #print parse_text(u'呼伦贝尔大草原')
-    print postagger_text(u'呼伦贝尔大草原')
+    #print postagger_text(u'呼伦贝尔大草原')
+    h=load_headers()
+    print h['UserStatus']

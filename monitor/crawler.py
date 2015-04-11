@@ -20,7 +20,7 @@ global headers
 global session
 
 global debug
-debug=True
+debug=False
 
 def myprint(information):
     if debug:
@@ -31,7 +31,7 @@ def install_cookie(cookie_file_name):
     global session
     cookies=requests.utils.cookiejar_from_dict(cPickle.load(open(cookie_file_name,'rb')))
     session=requests.Session()
-    #session.cookies=cookies
+    session.cookies=cookies
 
 def update_time(body):
     if 'timestamp' in body['params']:
@@ -43,7 +43,9 @@ def get_html(body):
     global session
     try:
         body=update_time(body)
-        html=session.get(url=body['url'], headers=body['headers'], params=body['params'], timeout=20)
+        myprint(body['headers'])
+        html=session.get(url=body['url'], headers=body['headers'],
+                params=body['params'],timeout=20,allow_redirects=True)
     except requests.exceptions.ConnectionError:
         raise Exception('ConnectionError')
     except requests.exceptions.Timeout:
@@ -51,11 +53,12 @@ def get_html(body):
             body=update_time(body)
             html=session.get(url=body['url'], headers=body['headers'], params=body['params'], timeout=20)
         except Exception as e:
-            print e
+            myprint(e)
             return ''
     except Exception as e:
         raise
 
+    myprint(html.text)
     if 'location.replace' in html.text:
         target=get_target(html.text)
         if(target==None):
@@ -66,23 +69,27 @@ def get_html(body):
             try:
                 body=update_time(body)
                 html=session.get(url=body['url'], headers=body['headers'], params=body['params'], timeout=20)
-                print html.text
-                print html.url
+                myprint(html.text)
+                myprint(html.url)
                 cookies=requests.utils.dict_from_cookiejar(session.cookies)
-                #cPickle.dump(cookies,open('./cookies/cookie_'+str(sys.argv[1]),'wb'))
+                cPickle.dump(cookies,open('./cookies/cookie_'+str(sys.argv[1]),'wb'))
             except:
                 sleep(sleep_time)
                 try:
                     body=update_time(body)
                     html=session.get(url=body['url'], headers=body['headers'],params=body['params'], timeout=20)
-                    print html.url
+                    myprint(html.url)
                     cookies=requests.utils.dict_from_cookiejar(session.cookies)
-                    #cPickle.dump(cookies,open('./cookies/cookie_'+str(sys.argv[1]),'wb'))
+                    cPickle.dump(cookies,open('./cookies/cookie_'+str(sys.argv[1]),'wb'))
                 except Exception as e:
+                    print '============'
                     myprint(e)
+                    print '============'
                     raise Exception('Cannot find redirect target')
-    #if '<title>Sina Visitor System</title>' in html.text:
-    #    raise(Exception('Cookie is past due'))
+    if '<title>Sina Visitor System</title>' in html.text:
+        raise(Exception('Cookie is past due'))
+    if '<title>502' in html.text:
+        raise(Exception('502 error'))
     return html
 
 #定义接收到消息的处理方法
@@ -115,7 +122,7 @@ def main():
     connection = pika.BlockingConnection(pika.ConnectionParameters(
             host='localhost'))
     channel = connection.channel()
-    sleep_time=50
+    sleep_time=5
     #定义队列
     channel.queue_declare(queue=settings.QUEUE_NAME)
     channel.basic_qos(prefetch_count=1)

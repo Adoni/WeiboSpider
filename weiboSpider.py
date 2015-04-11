@@ -25,6 +25,7 @@ class WeiboSpider():
 
     #The headers to imitate the brower
     all_headers=load_headers()
+    print all_headers
 
     def __init__(self):
         print('========This is Weibo Spider========')
@@ -37,8 +38,19 @@ class WeiboSpider():
         self.users_collection=self.db.users
         self.corpse_users=self.db.corpse_users
 
-    def get_html(self, url, headers=None, need_sleep=True, params=[]):
+    def construct_url(self,url,params):
+        complete_url=url
+        p=[]
+        for key in params:
+            p.append(str(key)+'='+str(params[key]))
+        if p is not []:
+            complete_url+='?'+'&'.join(p)
+        return complete_url
+
+    def get_html(self, url, headers=None, need_sleep=True, params={}):
         body={'url':url, 'headers':headers, 'need_sleep':True, 'params':params}
+        #url=self.construct_url(url,params)
+        #body={'url':url, 'headers':headers, 'need_sleep':True, 'params':None}
         return self.deliver.request(body)
 
     #Use this function to take emotions from user posts
@@ -72,6 +84,8 @@ class WeiboSpider():
                 print url
                 break
             open('./hehe.html','w').write(html.text.encode('utf8'))
+            print html.url
+            print html.headers
             html=get_htmls_by_domid(html.text,'Pl_Official_MyProfileFeed__')
             if not html:
                 print 'Html is None'
@@ -80,6 +94,7 @@ class WeiboSpider():
             html=normal(html[0])
             tmp_statuses=get_statuses(html)
             if tmp_statuses==[]:
+                print html
                 break
             statuses+=tmp_statuses
             for pagebar in range(0,2):
@@ -116,6 +131,7 @@ class WeiboSpider():
                     continue
                 statuses+=tmp_statuses
             page+=1
+            break
         return statuses
 
     def get_uids(self, count=-1, uid_file='./uids.bin'):
@@ -264,10 +280,17 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    #print spider.get_user_statuses('1831202675')
+    print spider.get_user_statuses('1831202675')
     #spider.start_requests()
     #print spider.get_user_birthday('1448482450')
-    h=spider.get_html('http://weibo.com/u/1883388073',headers=spider.all_headers['UserStatus'])
-    open('./hehe.html','w').write(h.text.encode('utf8'))
-    print(h.url)
-    #spider.insert_birthday()
+    #h=spider.get_html('http://weibo.com/u/1883388073',headers=spider.all_headers['UserStatus'])
+    #open('./hehe.html','w').write(h.text.encode('utf8'))
+    #print(h.url)
+    #print h.headers
+    # print('======')
+    # for i in h.history:
+    #     print i.url
+    #     print i.status_code
+    #     print i.headers
+    #     print i.text
+    # spider.insert_birthday()
