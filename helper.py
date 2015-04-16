@@ -559,13 +559,3 @@ def parse_image_descriptions():
 
 if __name__=='__main__':
     print '========Helper========'
-    #clean_users()
-    #parse_image_descriptions()
-    #parse_all()
-    #insert_avatar_url()
-    #insert_image_descriptions()
-    #print get_average_statuses_count()
-    #print parse_text(u'呼伦贝尔大草原')
-    #print postagger_text(u'呼伦贝尔大草原')
-    h=load_headers()
-    print h['UserStatus']

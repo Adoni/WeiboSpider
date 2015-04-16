@@ -131,7 +131,6 @@ class WeiboSpider():
                     continue
                 statuses+=tmp_statuses
             page+=1
-            break
         return statuses
 
     def get_uids(self, count=-1, uid_file='./uids.bin'):
@@ -172,6 +171,9 @@ class WeiboSpider():
             return None
 
     def get_user_information(self, uid):
+        information=dict()
+        information['uid']=uid
+        return information
         url='https://api.weibo.com/2/users/show.json'
         params={
             'access_token':self.access_token,
@@ -217,14 +219,14 @@ class WeiboSpider():
         return information
 
     def get_user_data(self, uid):
-        #information=self.get_user_information(uid)
-        #if information==None:
-        #    return None
+        information=self.get_user_information(uid)
+        if information==None:
+            return None
         statuses=self.get_user_statuses(uid)
         if statuses==[] or statuses==None:
             return None
         user_data=dict()
-        #user_data['information']=information
+        user_data['information']=information
         user_data['statuses']=statuses
         user_data['parsed']=False
         user_data['type']='new'
@@ -280,4 +282,5 @@ class WeiboSpider():
 
 if __name__=='__main__':
     spider=WeiboSpider()
-    print spider.get_user_statuses('1831202675')
+    #spider.start_requests()
+    print spider.get_user_statuses('3497834712')
