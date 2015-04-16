@@ -281,16 +281,3 @@ class WeiboSpider():
 if __name__=='__main__':
     spider=WeiboSpider()
     print spider.get_user_statuses('1831202675')
-    #spider.start_requests()
-    #print spider.get_user_birthday('1448482450')
-    #h=spider.get_html('http://weibo.com/u/1883388073',headers=spider.all_headers['UserStatus'])
-    #open('./hehe.html','w').write(h.text.encode('utf8'))
-    #print(h.url)
-    #print h.headers
-    # print('======')
-    # for i in h.history:
-    #     print i.url
-    #     print i.status_code
-    #     print i.headers
-    #     print i.text
-    # spider.insert_birthday()

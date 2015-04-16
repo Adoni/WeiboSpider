@@ -32,6 +32,6 @@ def dump_batch_cookieJar(start, end):
         dump_cookieJar(file_name)
 
 def main():
-    dump_batch_string_cookie(2,2)
+    dump_batch_string_cookie(0,0)
 if __name__=='__main__':
     main()

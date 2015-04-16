@@ -131,4 +131,8 @@ def main():
     channel.start_consuming()
 
 if __name__ == '__main__':
+    if len(sys.argv)==2:
+        debug=False
+    else:
+        debug=True
     main()
